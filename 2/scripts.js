@@ -177,10 +177,10 @@ let tasksMatchesFilter = function (todo) {
     let filterStartDate = document.getElementById("startDate").value;
     let filterEndDate = document.getElementById("endDate").value;
     let todoCutDate = new Date(todo.dueDate).toISOString().split('T')[0];
-    if (filterStartDate > todoCutDate) {
+    if (filterStartDate && filterStartDate > todoCutDate) {
         return false;
     }
-    if (filterEndDate < todoCutDate) {
+    if (filterEndDate && filterEndDate < todoCutDate) {
         return false;
     }
     if (filterInput.value === "") {
