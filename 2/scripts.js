@@ -183,13 +183,11 @@ let tasksMatchesFilter = function (todo) {
     if (filterEndDate && filterEndDate < todoCutDate) {
         return false;
     }
-    if (filterInput.value === "") {
+    if (filterInput === "") {
         return true;
     }
     if (todo.title.toLowerCase().includes(filterInput)) {
         return true;
     }
-    if (todo.description.toLowerCase().includes(filterInput)) {
-        return true;
-    }
+    return todo.description.toLowerCase().includes(filterInput);
 }
