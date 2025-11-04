@@ -1,0 +1,140 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: skyblue;
+}
+
+.grass {
+    position: absolute;
+    top:20%;
+    height:25%;
+    width:100%;
+    background:lightgreen;
+}
+.sun {
+    position: absolute;
+    top:6vh;
+    left:6vh;
+    width:8vh;
+    min-height: 50px;
+    min-width: 50px;
+    height: 8vh;
+    border-radius:50%;
+    background:#ffff66;
+}
+
+.road {
+    position:absolute;
+    top:45%;
+    height:55%;
+    width:100%;
+    background:gray;
+}
+
+.bus {
+    position: absolute;
+    top: 40%;
+    left: 30%;
+    height: 200px;
+    width: 400px;
+    background: #fdc223;
+    border-radius: 40px 40px 0 0;
+}
+
+.windows {
+    position: absolute;
+    top: 30px;
+    display: flex;
+    gap: 20px;
+    margin-right: 20px;
+}
+
+.front-window {
+    width: 80px;
+    height: 80px;
+    margin-right: 10px;
+    border-radius: 20px 0 0 0;
+    background: #c6e9fc;
+
+}
+
+.window {
+    width: 30px;
+    height: 50px;
+    background: #c6e9fc;
+}
+
+.bus-bottom {
+    position: absolute;
+    top:85%;
+    width: 100%;
+    height: 15%;
+    background: #bdc1c5;
+}
+
+.stripes {
+    position: absolute;
+    top:50%;
+    left:30%;
+    display:flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.stripe {
+    height:15px;
+    width:220px;
+    border-radius: 20px;
+    background: white;
+}
+
+.lights {
+    position: absolute;
+    top:65%;
+    display:flex;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.front-light {
+    height:25px;
+    width:35px;
+    border-radius: 0 15px 15px 0;
+    background: #fbdf1d;
+}
+
+.back-light {
+    height:25px;
+    width:35px;
+    border-radius: 15px 0 0 15px;
+    background: #fd4c35;
+}
+
+.wheels {
+    position: absolute;
+    bottom:-40px;
+    width:100%;
+    display:flex;
+    justify-content: space-around;
+}
+
+.wheel {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background:black;
+}
+
+.inside-wheel {
+    position: relative;
+    top:25px;
+    left:25px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background:white;
+}

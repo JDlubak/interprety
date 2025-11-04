@@ -1,0 +1,33 @@
+.card {
+    background: linear-gradient(220deg, rgba(193, 193, 209, 0.3), rgba(193, 193, 209, 0.5));
+}
+
+.btn-success:hover {
+    transform: scale(1.1);
+    transition: 0.2s;
+}
+
+.btn-outline-danger:hover {
+    transform: scale(1.1);
+    transition: 0.2s;
+}
+
+table tr:nth-child(odd) {
+    background-color: #f8f9fa;
+}
+
+table tr:nth-child(even) {
+    background-color: rgba(193, 193, 209, 0.4);
+}
+
+table tr:not(:first-child):hover {
+    background-color: rgba(117, 117, 131, 0.2);
+}
+
+#todoListTable table th {
+    border: 2px solid #000000;
+}
+
+#todoListTable table td {
+    border: 1px solid #000000;
+}
