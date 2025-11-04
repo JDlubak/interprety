@@ -58,6 +58,8 @@ let updateTodoList = function () {
     }
 
     if (todoList[0] !== PLACEHOLDER && todoList.length > 0) {
+        let wrapper = document.createElement("div");
+        wrapper.className = "table-responsive";
         let table = createTableHeader();
         let isTableCreated = createTableBody(table);
         if (isTableCreated) {
@@ -75,9 +77,6 @@ let updateTodoList = function () {
 };
 
 let createTableHeader = function () {
-    let wrapper = document.createElement("div");
-    wrapper.className = "table-responsive";
-
     let table = document.createElement("table");
     table.className = "table table-striped table-hover table-bordered align-middle text-center";
 
