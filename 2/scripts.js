@@ -16,7 +16,6 @@ let initJSONbin = function () {
     let req = new XMLHttpRequest();
     req.onreadystatechange = () => {
         if (req.readyState === XMLHttpRequest.DONE) {
-            console.log(req.responseText);
             let response = JSON.parse(req.responseText);
             if (response.record[0] !== PLACEHOLDER) {
                 todoList = response.record;
@@ -38,7 +37,6 @@ let updateJSONbin = function () {
     let req = new XMLHttpRequest();
     req.onreadystatechange = () => {
         if (req.readyState === XMLHttpRequest.DONE) {
-            console.log(req.responseText);
         }
     };
     req.open("PUT", jsonURL, true);
