@@ -52,7 +52,6 @@ let updateTodoList = function () {
     let todoListDiv = document.getElementById("todoListTable");
     let infoMessage = document.getElementById("infoMessage");
 
-    // usuń poprzednią zawartość
     while (todoListDiv.firstChild) {
         todoListDiv.removeChild(todoListDiv.firstChild);
     }
@@ -161,7 +160,7 @@ let deleteTodo = function (index) {
     updateJSONbin();
 }
 
-let addTodo = function () {
+let addTodo = async function () {
     let inputTitle = document.getElementById("inputTitle");
     let inputDescription = document.getElementById("inputDescription");
     let inputPlace = document.getElementById("inputPlace");
@@ -173,14 +172,39 @@ let addTodo = function () {
     let newDate = new Date(inputDate.value);
 
     if (newTitle && newDescription && newPlace && inputDate.value) {
+        let newCategory = await generateCategoryUsingGroq(newTitle, newDescription);
         let newTodo = {
-            title: newTitle, description: newDescription, place: newPlace, category: '', dueDate: newDate
+            title: newTitle, description: newDescription, place: newPlace, category: newCategory, dueDate: newDate
         };
         todoList.push(newTodo);
         window.localStorage.setItem("todos", JSON.stringify(todoList));
         updateJSONbin();
     } else alert("Please fill in all information!");
 }
+
+async function generateCategoryUsingGroq(title, description) {
+    let prompt = env.GROQ_PROMPT + `TITLE: ${title}, DESCRIPTION: ${description}` ;
+
+    let response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${env.GROQ_API_KEY}`
+        },
+        body: JSON.stringify({
+            model: env.GROQ_MODEL,
+            messages: [
+                {
+                    role: "user",
+                    content: prompt
+                }
+            ]
+        })
+    });
+    const data = await response.json();
+    return data.choices[0]?.message?.content?.trim();
+}
+
 initList();
 initJSONbin();
 setInterval(updateTodoList, 1000);
