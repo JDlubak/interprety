@@ -36,12 +36,15 @@ function validateString(value, fieldName, maxLength = null) {
     return null
 }
 
-function validateNumber(value, fieldName) {
+function validateNumber(value, fieldName, isInteger = false) {
     if (typeof value !== 'number' || isNaN(value)) {
         return (`Field ${fieldName} must be a valid number`);
     }
     if (value < 0) {
-        return (`Field ${fieldName} must be a positive integer`);
+        return (`Field ${fieldName} must be a positive number`);
+    }
+    if (isInteger && !Number.isInteger(value)) {
+        return (`Field ${fieldName} must be an integer`);
     }
     return null;
 }
@@ -59,4 +62,28 @@ async function validateId(pool, id, query, fieldName) {
     return null;
 }
 
-module.exports = {validateFields, validateAll, validateString, validateNumber, validateId};
+async function validateItems(items, pool) {
+    if (!Array.isArray(items) || items.length === 0) {
+        return ('Items must be a non-empty array');
+    }
+    const errors = [];
+    for (const [index, {productId, quantity, unit_price, vat, discount}] of items.entries()) {
+        let err = await validateId(pool, productId, process.env.CHECK_PRODUCT, 'product');
+        if (err) errors.push(`Item ${index + 1}: ${err}`);
+        err = validateNumber(quantity, 'quantity', true);
+        if (err) errors.push(`Item ${index + 1}: ${err}`);
+        err = validateNumber(unit_price, 'unit_price')
+        if (err) errors.push(`Item ${index + 1}: ${err}`);
+        if (vat !== undefined) {
+            err = validateNumber(vat, 'vat');
+            if (err) errors.push(`Item ${index + 1}: ${err}`);
+        }
+        if (discount!== undefined) {
+            err = validateNumber(discount, 'discount');
+            if (err) errors.push(`Item ${index + 1}: ${err}`);
+        }
+    }
+    return errors.length > 0 ? errors.join('; ') : null;
+}
+
+module.exports = {validateFields, validateAll, validateString, validateNumber, validateId, validateItems};

@@ -14,8 +14,7 @@ const config = {
 
 async function getPool() {
     try {
-        const pool = await new sql.ConnectionPool(config).connect();
-        return pool;
+        return await new sql.ConnectionPool(config).connect();
     } catch (err) {
         throw err;
     }
