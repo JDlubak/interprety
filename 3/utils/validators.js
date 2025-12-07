@@ -86,4 +86,12 @@ async function validateItems(items, pool) {
     return errors.length > 0 ? errors.join('; ') : null;
 }
 
-module.exports = {validateFields, validateAll, validateString, validateNumber, validateId, validateItems};
+function checkError(res, errorMessage) {
+    if (errorMessage !== null) {
+        sendHttp(res, StatusCodes.BAD_REQUEST, errorMessage);
+        return true;
+    }
+    return false;
+}
+
+module.exports = {checkError, validateFields, validateAll, validateString, validateNumber, validateId, validateItems};

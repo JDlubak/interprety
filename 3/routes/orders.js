@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const {handleGetQuery} = require('../utils/getQueryHandler')
 const sql = require("mssql");
-const {validateFields, validateAll, validateString, validateNumber, validateId, validateItems} = require("../utils/validators");
+const {checkError, validateFields, validateAll, validateString, validateNumber, validateId, validateItems} = require("../utils/validators");
 const {sendHttp} = require("../utils/errorHandler");
 const {StatusCodes, NOT_IMPLEMENTED} = require("http-status-codes");
 const {getPool} = require("../database");
@@ -31,12 +31,6 @@ router.post('/', async (req, res) => {
 
 });
 
-function checkError(res, errorMessage) {
-    if (errorMessage !== null) {
-        sendHttp(res, StatusCodes.BAD_REQUEST, errorMessage);
-        return true;
-    }
-    return false;
-}
+
 
 module.exports = router;

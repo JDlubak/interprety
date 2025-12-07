@@ -6,7 +6,7 @@ const sql = require("mssql");
 const {StatusCodes} = require("http-status-codes");
 const {sendHttp} = require('../utils/errorHandler');
 const {getPool} = require("../database");
-const {validateFields, validateAll, validateString, validateNumber, validateId} = require("../utils/validators");
+const {checkError, validateFields, validateAll, validateString, validateNumber, validateId} = require("../utils/validators");
 
 router.get('/', async (req, res) => {
     await handleGetQuery(res, process.env.PRODUCTS_QUERY);
@@ -18,17 +18,11 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
     const required = ['name', 'description', 'price', 'weight', 'categoryId'];
-    let errorMessage = validateFields(required, req.body, "POST");
-    if (errorMessage !== null) {
-        return sendHttp(res, StatusCodes.BAD_REQUEST, errorMessage);
-    }
+    if (checkError(res, validateFields(required, req.body, "POST"))) return;
     const {name, description, price, weight, categoryId} = req.body;
     try {
         const pool = await getPool();
-        errorMessage = await validateAll(name, description, price, weight, categoryId, pool);
-        if (errorMessage !== null) {
-            return sendHttp(res, StatusCodes.BAD_REQUEST, errorMessage);
-        }
+        if (checkError(res, await validateAll(name, description, price, weight, categoryId, pool))) return;
         const request = pool.request();
         request.input('name', sql.VarChar, name);
         request.input('description', sql.VarChar, description);
@@ -51,25 +45,18 @@ router.put('/:id', async (req, res) => {
     if (updateFields.length === 0) {
         return sendHttp(res, StatusCodes.BAD_REQUEST, 'No valid fields to update!');
     }
-    let errorMessage = validateFields(allowedFields, req.body, "PUT");
-    if (errorMessage !== null) {
-        return sendHttp(res, StatusCodes.BAD_REQUEST, errorMessage);
-    }
+    if (checkError(res, validateFields(allowedFields, req.body, "PUT"))) return;
     const {name, description, price, weight, categoryId} = req.body;
     try {
         const pool = await getPool();
-        let errorMessage = await validateId(pool, productId, process.env.CHECK_PRODUCT, 'product');
-        if (errorMessage !== null) {
-            return sendHttp(res, StatusCodes.BAD_REQUEST, errorMessage);
-        }
+        if (checkError(res, await validateId(pool, productId, process.env.CHECK_PRODUCT, 'product'))) return;
         const errors = [];
         if (name !== undefined) errors.push(validateString(name, 'name', 100));
         if (description !== undefined) errors.push(validateString(description, 'description'));
         if (price !== undefined) errors.push(validateNumber(price, 'price'));
         if (weight !== undefined) errors.push(validateNumber(weight, 'weight'));
         if (categoryId !== undefined) errors.push(await validateId(pool, categoryId, process.env.CHECK_CATEGORY, 'category'));
-        errorMessage = errors.find(e => e != null);
-        if (errorMessage) return sendHttp(res, StatusCodes.BAD_REQUEST, errorMessage);
+        if (checkError(res, errors.find(e => e != null))) return;
         const request = pool.request();
         const setClauses = [];
         request.input('productId', sql.Int, productId);
