@@ -1,4 +1,6 @@
 const sql = require("mssql");
+const {sendHttp} = require("./errorHandler");
+const {StatusCodes} = require('http-status-codes');
 
 function validateFields(fieldsList, body, method) {
     if (!body || typeof body !== 'object') {
@@ -46,6 +48,12 @@ function validateNumber(value, fieldName, isInteger = false) {
     if (isInteger && !Number.isInteger(value)) {
         return (`Field ${fieldName} must be an integer`);
     }
+    if (fieldName === 'vat' && value > 30) {
+        return (`Field vat must be in range 0-30`);
+    }
+    if (fieldName === 'discount' && value > 1) {
+        return (`Field discount must be in range 0-1`);
+    }
     return null;
 }
 
@@ -72,7 +80,7 @@ async function validateItems(items, pool) {
         if (err) errors.push(`Item ${index + 1}: ${err}`);
         err = validateNumber(quantity, 'quantity', true);
         if (err) errors.push(`Item ${index + 1}: ${err}`);
-        err = validateNumber(unit_price, 'unit_price')
+        err = validateNumber(unitPrice, 'unitPrice')
         if (err) errors.push(`Item ${index + 1}: ${err}`);
         if (vat !== undefined) {
             err = validateNumber(vat, 'vat');
