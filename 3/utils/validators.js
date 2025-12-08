@@ -20,7 +20,13 @@ function validateFields(fieldsList, body, method) {
 }
 
 async function validateAll(name, description, price, weight, categoryId, pool) {
-    const errors = [validateString(name, 'name', 100), validateString(description, 'description'), validateNumber(price, 'price'), validateNumber(weight, 'weight'), await validateId(pool, categoryId, process.env.CHECK_CATEGORY, 'category')]
+    const errors = [
+        validateString(name, 'name', 100),
+        validateString(description, 'description'),
+        validateNumber(price, 'price'),
+        validateNumber(weight, 'weight'),
+        await validateId(pool, categoryId, process.env.CHECK_CATEGORY, 'category')
+    ]
     const error = errors.find(e => e !== null);
     return error ? error : null;
 }
@@ -74,14 +80,38 @@ async function validateItems(items, pool) {
     if (!Array.isArray(items) || items.length === 0) {
         return ('Items must be a non-empty array');
     }
+    const allowedFields = ['productId', 'quantity', 'unitPrice', 'discount', 'vat']
     const errors = [];
-    for (const [index, {productId, quantity, unit_price, vat, discount}] of items.entries()) {
-        let err = await validateId(pool, productId, process.env.CHECK_PRODUCT, 'product');
-        if (err) errors.push(`Item ${index + 1}: ${err}`);
-        err = validateNumber(quantity, 'quantity', true);
-        if (err) errors.push(`Item ${index + 1}: ${err}`);
-        err = validateNumber(unitPrice, 'unitPrice')
-        if (err) errors.push(`Item ${index + 1}: ${err}`);
+    for (const [index, item] of items.entries()) {
+        const unknownFields = Object.keys(item).filter(
+            field => !allowedFields.includes(field)
+        );
+        if (unknownFields.length > 0) {
+            errors.push(`Item ${index + 1}: Unknown fields: ${unknownFields.join(', ')}`)
+        }
+        let err;
+        const { productId, quantity, unitPrice, vat, discount } = item;
+        if (productId === undefined) {
+            errors.push(`Item ${index + 1}: productId is required`);
+        }
+        else {
+            err = await validateId(pool, productId, process.env.CHECK_PRODUCT, 'product');
+            if (err) errors.push(`Item ${index + 1}: ${err}`);
+        }
+        if (quantity === undefined) {
+            errors.push(`Item ${index + 1}: quantity is required`);
+        }
+        else {
+            err = validateNumber(quantity, 'quantity', true);
+            if (err) errors.push(`Item ${index + 1}: ${err}`);
+        }
+        if (unitPrice === undefined) {
+            errors.push(`Item ${index + 1}: unitPrice is required`);
+        }
+        else {
+            err = validateNumber(unitPrice, 'unitPrice')
+            if (err) errors.push(`Item ${index + 1}: ${err}`);
+        }
         if (vat !== undefined) {
             err = validateNumber(vat, 'vat');
             if (err) errors.push(`Item ${index + 1}: ${err}`);
