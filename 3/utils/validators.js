@@ -6,7 +6,7 @@ function validateFields(fieldsList, body, method) {
     if (!body || typeof body !== 'object') {
         return (`Request body must be valid JSON with fields: ${fieldsList.join(', ')}`);
     }
-    if (method === 'POST') {
+    if (method === 'POST' || method === 'PATCH') {
         const missing = fieldsList.filter(f => !body[f]);
         if (missing.length > 0) {
             return (`Missing required fields: ${missing.join(', ')}`);
@@ -128,25 +128,22 @@ async function validateItems(items, pool) {
             errors.push(`Item ${index + 1}: Unknown fields: ${unknownFields.join(', ')}`)
         }
         let err;
-        const { productId, quantity, unitPrice, vat, discount } = item;
+        const {productId, quantity, unitPrice, vat, discount} = item;
         if (productId === undefined) {
             errors.push(`Item ${index + 1}: productId is required`);
-        }
-        else {
+        } else {
             err = await validateId(pool, productId, process.env.CHECK_PRODUCT, 'product');
             if (err) errors.push(`Item ${index + 1}: ${err}`);
         }
         if (quantity === undefined) {
             errors.push(`Item ${index + 1}: quantity is required`);
-        }
-        else {
+        } else {
             err = validateNumber(quantity, 'quantity', true);
             if (err) errors.push(`Item ${index + 1}: ${err}`);
         }
         if (unitPrice === undefined) {
             errors.push(`Item ${index + 1}: unitPrice is required`);
-        }
-        else {
+        } else {
             err = validateNumber(unitPrice, 'unitPrice')
             if (err) errors.push(`Item ${index + 1}: ${err}`);
         }
@@ -154,12 +151,37 @@ async function validateItems(items, pool) {
             err = validateNumber(vat, 'vat');
             if (err) errors.push(`Item ${index + 1}: ${err}`);
         }
-        if (discount!== undefined) {
+        if (discount !== undefined) {
             err = validateNumber(discount, 'discount');
             if (err) errors.push(`Item ${index + 1}: ${err}`);
         }
     }
     return errors.length > 0 ? errors.join('; ') : null;
+}
+
+async function validateStatus(pool, value, orderId) {
+    const available = ['CANCELLED', 'COMPLETED', 'CONFIRMED', 'UNCONFIRMED'];
+    if (!available.includes(value)) {
+        return ('Provided status is incorrect. Use: CANCELLED|COMPLETED|CONFIRMED|UNCONFIRMED');
+    }
+    const request = await pool.request();
+    request.input('status', sql.VarChar(30), value);
+    request.input('orderId', sql.Int, orderId);
+    const result = await request.query(process.env.CHECK_ORDER_STATUS);
+    const {status} = result.recordset[0];
+    if (status === "CANCELLED" || status === "COMPLETED") {
+        return (`This order has been ${status} - further changes are not allowed`)
+    }
+    if (status === value) {
+        return (`Order is already ${status} - unable to change to the same status`)
+    }
+    if (status === "UNCONFIRMED" && value === "COMPLETED") {
+        return ('This order cannot be COMPLETED, as it is still UNCONFIRMED')
+    }
+    if (status === "CONFIRMED" &&  value === "UNCONFIRMED") {
+        return ('This order has been CONFIRMED - unable to revert back to UNCONFIRMED');
+    }
+    return null
 }
 
 function checkError(res, errorMessage) {
@@ -170,6 +192,8 @@ function checkError(res, errorMessage) {
     return false;
 }
 
-module.exports = {checkError, validateFields, validateAll,
-                  validateString, validateNumber, validateId,
-                  validateItems, validateEmail, validatePhone};
+module.exports = {
+    checkError, validateFields, validateAll,
+    validateString, validateNumber, validateId,
+    validateItems, validateEmail, validatePhone, validateStatus
+};
