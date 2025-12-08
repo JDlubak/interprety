@@ -20,13 +20,7 @@ function validateFields(fieldsList, body, method) {
 }
 
 async function validateAll(name, description, price, weight, categoryId, pool) {
-    const errors = [
-        validateString(name, 'name', 100),
-        validateString(description, 'description'),
-        validateNumber(price, 'price'),
-        validateNumber(weight, 'weight'),
-        await validateId(pool, categoryId, process.env.CHECK_CATEGORY, 'category')
-    ]
+    const errors = [validateString(name, 'name', 100), validateString(description, 'description'), validateNumber(price, 'price'), validateNumber(weight, 'weight'), await validateId(pool, categoryId, process.env.CHECK_CATEGORY, 'category')]
     const error = errors.find(e => e !== null);
     return error ? error : null;
 }
@@ -121,9 +115,7 @@ async function validateItems(items, pool) {
     const allowedFields = ['productId', 'quantity', 'unitPrice', 'discount', 'vat']
     const errors = [];
     for (const [index, item] of items.entries()) {
-        const unknownFields = Object.keys(item).filter(
-            field => !allowedFields.includes(field)
-        );
+        const unknownFields = Object.keys(item).filter(field => !allowedFields.includes(field));
         if (unknownFields.length > 0) {
             errors.push(`Item ${index + 1}: Unknown fields: ${unknownFields.join(', ')}`)
         }
@@ -178,7 +170,7 @@ async function validateStatus(pool, value, orderId) {
     if (status === "UNCONFIRMED" && value === "COMPLETED") {
         return ('This order cannot be COMPLETED, as it is still UNCONFIRMED')
     }
-    if (status === "CONFIRMED" &&  value === "UNCONFIRMED") {
+    if (status === "CONFIRMED" && value === "UNCONFIRMED") {
         return ('This order has been CONFIRMED - unable to revert back to UNCONFIRMED');
     }
     return null
@@ -193,7 +185,14 @@ function checkError(res, errorMessage) {
 }
 
 module.exports = {
-    checkError, validateFields, validateAll,
-    validateString, validateNumber, validateId,
-    validateItems, validateEmail, validatePhone, validateStatus
+    checkError,
+    validateFields,
+    validateAll,
+    validateString,
+    validateNumber,
+    validateId,
+    validateItems,
+    validateEmail,
+    validatePhone,
+    validateStatus
 };

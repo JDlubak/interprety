@@ -6,7 +6,9 @@ const sql = require("mssql");
 const {StatusCodes} = require("http-status-codes");
 const {sendHttp} = require('../utils/errorHandler');
 const {getPool} = require("../database");
-const {checkError, validateFields, validateAll, validateString, validateNumber, validateId} = require("../utils/validators");
+const {
+    checkError, validateFields, validateAll, validateString, validateNumber, validateId
+} = require("../utils/validators");
 
 router.get('/', async (req, res) => {
     await handleGetQuery(res, process.env.PRODUCTS_QUERY);

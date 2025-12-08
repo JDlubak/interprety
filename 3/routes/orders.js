@@ -13,15 +13,13 @@ router.get('/', async (req, res) => {
 })
 
 router.get('/status/:id', async (req, res) => {
-    await handleGetQuery(res, process.env.ORDERS_ID_QUERY,
-        [{name: 'id', type: sql.Int, value: req.params.id}],
-    );
+    await handleGetQuery(res, process.env.ORDERS_ID_QUERY, [{name: 'id', type: sql.Int, value: req.params.id}],);
 });
 
 router.post('/', async (req, res) => {
     const required = ['customerId', 'items'];
     if (checkError(res, validateFields(required, req.body, "POST"))) return;
-    const { customerId, items } = req.body;
+    const {customerId, items} = req.body;
     try {
         const pool = await getPool();
         if (checkError(res, await validateId(pool, customerId, process.env.CHECK_CUSTOMER, 'customer'))) return;
@@ -46,8 +44,7 @@ router.post('/', async (req, res) => {
             }
             await transaction.commit();
             res.status(StatusCodes.CREATED).json({
-                StatusCode: StatusCodes.CREATED,
-                message: 'Order created!'
+                StatusCode: StatusCodes.CREATED, message: 'Order created!'
             });
         } catch (err) {
             await transaction.rollback();
@@ -60,10 +57,7 @@ router.post('/', async (req, res) => {
 
 router.patch('/:id', async (req, res) => {
     const statusToId = {
-        UNCONFIRMED: 1,
-        CONFIRMED: 2,
-        CANCELLED: 3,
-        COMPLETED: 4
+        UNCONFIRMED: 1, CONFIRMED: 2, CANCELLED: 3, COMPLETED: 4
     };
     const required = ["status"];
     if (checkError(res, validateFields(required, req.body, "PATCH"))) return;
@@ -86,7 +80,6 @@ router.patch('/:id', async (req, res) => {
         sendHttp(res, StatusCodes.INTERNAL_SERVER_ERROR, `Server error: ${err.message}`);
     }
 })
-
 
 
 module.exports = router;

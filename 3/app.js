@@ -5,8 +5,7 @@ const {sendHttp} = require('./utils/errorHandler');
 const app = express();
 
 app.use(express.json({
-    strict: true,
-    verify: (req, res, buf) => {
+    strict: true, verify: (req, res, buf) => {
         try {
             JSON.parse(buf.toString());
         } catch (err) {

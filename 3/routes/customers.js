@@ -16,15 +16,13 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/:id', async (req, res) => {
-    await handleGetQuery(res, process.env.CUSTOMER_ID_QUERY,
-        [{name: 'id', type: sql.Int, value: req.params.id}],
-    );
+    await handleGetQuery(res, process.env.CUSTOMER_ID_QUERY, [{name: 'id', type: sql.Int, value: req.params.id}],);
 });
 
 router.post('/', async (req, res) => {
     const required = ['username', 'phone', 'email'];
     if (checkError(res, validateFields(required, req.body, "POST"))) return;
-    const { username, phone, email } = req.body;
+    const {username, phone, email} = req.body;
     try {
         const pool = await getPool();
         if (checkError(res, validateString(username, 'username', 30))) return;
