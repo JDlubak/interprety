@@ -76,6 +76,44 @@ async function validateId(pool, id, query, fieldName) {
     return null;
 }
 
+async function validateEmail(value, pool) {
+    if (typeof value !== 'string') {
+        return (`Field email must be a string`);
+    }
+    if (value.length > 100) {
+        return ('Field email must not exceed 100 characters');
+    }
+    if (value !== value.toLowerCase()) {
+        return ('Email must contain only lowercase letters');
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(value)) {
+        return (`Field email must be a valid email in format xxx@domain.com`);
+    }
+    const request = await pool.request();
+    const result = await request.query(process.env.GET_EMAILS);
+    if (result.recordset.some(row => row.email === value)) {
+        return ('This email already exists in database - try another one')
+    }
+    return null;
+}
+
+async function validatePhone(value, pool) {
+    if (typeof value !== 'string') {
+        return `Field phone must be a string`;
+    }
+    const phoneRegex = /^\d{3}-\d{3}-\d{3}$/;
+    if (!phoneRegex.test(value)) {
+        return (`Field phone must be 9 numbers separated by '-' in format XXX-XXX-XXX`);
+    }
+    const request = await pool.request();
+    const result = await request.query(process.env.GET_PHONES);
+    if (result.recordset.some(row => row.phone === value)) {
+        return ('This phone already exists in database - try another one')
+    }
+    return null;
+}
+
 async function validateItems(items, pool) {
     if (!Array.isArray(items) || items.length === 0) {
         return ('Items must be a non-empty array');
@@ -132,4 +170,6 @@ function checkError(res, errorMessage) {
     return false;
 }
 
-module.exports = {checkError, validateFields, validateAll, validateString, validateNumber, validateId, validateItems};
+module.exports = {checkError, validateFields, validateAll,
+                  validateString, validateNumber, validateId,
+                  validateItems, validateEmail, validatePhone};
