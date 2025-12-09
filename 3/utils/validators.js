@@ -32,8 +32,8 @@ function validateString(value, fieldName, maxLength = null) {
     if (value.trim().length === 0) {
         return (`Field ${fieldName} must be a non-empty string`);
     }
-    if (maxLength && value.length > 100) {
-        return (`Field ${fieldName} must not exceed 100 characters`);
+    if (maxLength && value.length > maxLength) {
+        return (`Field ${fieldName} must not exceed ${maxLength} characters`);
     }
     return null
 }
@@ -176,6 +176,30 @@ async function validateStatus(pool, value, orderId) {
     return null
 }
 
+async function validateLogin(pool, login) {
+    const potentialError = validateString(login, 'login', 30);
+    if (potentialError) return potentialError;
+    if (!/^[a-zA-Z0-9_]+$/.test(login)) {
+        return 'Login can only contain letters, numbers and underscores';
+    }
+    const request = await pool.request();
+    request.input('login', sql.VarChar(30), login);
+    const result = await request.query(process.env.CHECK_LOGIN);
+    if (result.recordset.length > 0) {
+        return (`This login is already taken, choose another one or use /login to login`)
+    }
+    return null;
+}
+
+function validatePassword(password) {
+    if (typeof password !== 'string') return 'Password must be a string';
+    if (password.length < 8) return 'Password must be at least 8 characters long';
+    if (!/[A-Z]/.test(password)) return 'Password must contain at least one uppercase letter';
+    if (!/[a-z]/.test(password)) return 'Password must contain at least one lowercase letter';
+    if (!/[0-9]/.test(password)) return 'Password must contain at least one number';
+    return null; // hasło poprawne
+}
+
 function checkError(res, errorMessage) {
     if (errorMessage !== null) {
         sendHttp(res, StatusCodes.BAD_REQUEST, errorMessage);
@@ -194,5 +218,7 @@ module.exports = {
     validateItems,
     validateEmail,
     validatePhone,
-    validateStatus
+    validateStatus,
+    validateLogin,
+    validatePassword
 };

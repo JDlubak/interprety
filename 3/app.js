@@ -27,6 +27,7 @@ const categoriesRouter = require('./routes/categories');
 const ordersRouter = require('./routes/orders');
 const statusRouter = require('./routes/status');
 const customersRouter = require('./routes/customers');
+const registerRouter = require('./routes/register');
 
 
 app.use('/products', productsRouter);
@@ -34,6 +35,8 @@ app.use('/categories', categoriesRouter);
 app.use('/orders', ordersRouter);
 app.use('/status', statusRouter);
 app.use('/customers', customersRouter);
+app.use('/register', registerRouter);
+
 
 
 app.get('/', (req, res) => {
