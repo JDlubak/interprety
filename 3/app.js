@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const {StatusCodes} = require('http-status-codes');
 const {sendHttp} = require('./utils/errorHandler');
+const { authorisation } = require('./utils/jwtAuth');
 const app = express();
 
 app.use(express.json({
@@ -28,14 +29,19 @@ const ordersRouter = require('./routes/orders');
 const statusRouter = require('./routes/status');
 const customersRouter = require('./routes/customers');
 const registerRouter = require('./routes/register');
+const loginRouter = require('./routes/login');
+const refreshRouter = require('./routes/refresh');
 
 
-app.use('/products', productsRouter);
-app.use('/categories', categoriesRouter);
-app.use('/orders', ordersRouter);
-app.use('/status', statusRouter);
-app.use('/customers', customersRouter);
+app.use('/products', authorisation, productsRouter);
+app.use('/categories', authorisation, categoriesRouter);
+app.use('/orders', authorisation, ordersRouter);
+app.use('/status', authorisation, statusRouter);
+app.use('/customers', authorisation, customersRouter);
 app.use('/register', registerRouter);
+app.use('/login', loginRouter);
+app.use('/refresh', refreshRouter);
+
 
 
 

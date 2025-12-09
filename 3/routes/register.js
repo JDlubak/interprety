@@ -1,6 +1,5 @@
 const express = require('express');
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 const sql = require("mssql");
 const router = express.Router();
 const {validateFields, validateLogin, validatePassword, validateString, checkError, validateEmail, validatePhone, } = require('../utils/validators');
