@@ -29,7 +29,7 @@ router.post('/', async (req, res) => {
         request.input('name', sql.VarChar, name);
         request.input('description', sql.VarChar, description);
         request.input('price', sql.Decimal(10, 2), price);
-        request.input('weight', sql.Decimal(10, 2), weight);
+        request.input('weight', sql.Decimal(10, 3), weight);
         request.input('categoryId', sql.Int, categoryId);
         const result = await request.query(process.env.INSERT_PRODUCT);
         res.status(StatusCodes.CREATED).json({

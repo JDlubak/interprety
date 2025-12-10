@@ -31,7 +31,7 @@ const customersRouter = require('./routes/customers');
 const registerRouter = require('./routes/register');
 const loginRouter = require('./routes/login');
 const refreshRouter = require('./routes/refresh');
-
+const initRouter = require('./routes/init');
 
 app.use('/products', authorisation, productsRouter);
 app.use('/categories', authorisation, categoriesRouter);
@@ -41,6 +41,8 @@ app.use('/customers', authorisation, customersRouter);
 app.use('/register', registerRouter);
 app.use('/login', loginRouter);
 app.use('/refresh', refreshRouter);
+app.use('/init', authorisation, initRouter);
+
 
 
 
