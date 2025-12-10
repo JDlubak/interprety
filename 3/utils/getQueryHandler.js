@@ -16,7 +16,7 @@ async function handleGetQuery(res, query, params = []) {
             const idValue = idParam ? idParam.value : undefined;
             return sendHttp(res, StatusCodes.NOT_FOUND, `Record with id ${idValue} not found`);
         }
-        res.status(StatusCodes.OK).json(result.recordset);
+        return sendHttp(res, StatusCodes.OK, result.recordset);
     } catch (err) {
         sendHttp(res, StatusCodes.INTERNAL_SERVER_ERROR, `Server error: ${err.message}`);
     }

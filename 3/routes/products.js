@@ -9,6 +9,7 @@ const {getPool} = require("../database");
 const {
     checkError, validateFields, validateAll, validateString, validateNumber, validateId
 } = require("../utils/validators");
+const Groq = require("groq-sdk");
 
 router.get('/', async (req, res) => {
     await handleGetQuery(res, process.env.PRODUCTS_QUERY);
@@ -16,6 +17,44 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
     await handleGetQuery(res, process.env.PRODUCTS_ID_QUERY, [{name: 'id', type: sql.Int, value: req.params.id}],);
+});
+
+router.get('/:id/seo-description', async (req, res) => {
+    const id = parseInt(req.params.id);
+    try {
+        const pool = await getPool();
+        if (checkError(res, await validateId(pool, id, process.env.CHECK_PRODUCT, 'product'))) return;
+        const request = pool.request();
+        request.input('id', sql.Int, id);
+        const result = await request.query(process.env.PRODUCTS_ID_QUERY);
+        const {product, price, weight, category} = result.recordset[0];
+        const prompt = process.env.GROQ_PROMPT_TEMPLATE
+            .replace('{product}', product)
+            .replace('{price}', price)
+            .replace('{weight}', weight)
+            .replace('{category}', category);
+        const groq = new Groq({apiKey: process.env.Groq_API_KEY});
+        const response = await groq.chat.completions.create({
+            messages: [
+                {
+                    role: "user",
+                    content: prompt,
+                },
+            ],
+            model: process.env.GROQ_MODEL,
+        });
+        const seoHtml = response.choices?.[0]?.message?.content;
+
+        if (seoHtml) {
+            res.set("Content-Type", "text/html");
+            res.send(seoHtml);
+        } else {
+            sendHttp(res, StatusCodes.INTERNAL_SERVER_ERROR, 'A problem has occurred while creating description');
+        }
+    }
+    catch (err) {
+        sendHttp(res, StatusCodes.INTERNAL_SERVER_ERROR, `Server error: ${err.message}`);
+    }
 });
 
 router.post('/', async (req, res) => {
