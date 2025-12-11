@@ -93,7 +93,7 @@ router.put('/:id', authorisation, async (req, res) => {
         if (price !== undefined) errors.push(validateNumber(price, 'price'));
         if (weight !== undefined) errors.push(validateNumber(weight, 'weight'));
         if (categoryId !== undefined) errors.push(await validateId(pool, categoryId, process.env.CHECK_CATEGORY, 'category'));
-        if (checkError(res, errors.find(e => e != null))) return;
+        if (checkError(res, errors.find(e => e))) return;
         const request = pool.request();
         const setClauses = [];
         request.input('productId', sql.Int, productId);

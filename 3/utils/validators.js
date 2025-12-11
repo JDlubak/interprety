@@ -205,8 +205,7 @@ function validatePassword(password) {
 }
 
 function checkError(res, errorMessage) {
-    if (errorMessage !== null) {
-        console.log(errorMessage);
+    if (errorMessage != null) {
         sendHttp(res, StatusCodes.BAD_REQUEST, errorMessage);
         return true;
     }

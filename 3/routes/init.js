@@ -3,16 +3,14 @@ const sql = require("mssql");
 const fs = require("fs");
 const csv = require('csv-parser')
 const router = express.Router();
-const {validateFields, validateAll, checkError } = require('../utils/validators');
+const {validateFields, validateAll, checkError, validateRole} = require('../utils/validators');
 const {getPool} = require("../database");
 const {StatusCodes} = require("http-status-codes");
 const {sendHttp} = require("../utils/errorHandler");
 const {authorisation} = require("../utils/jwtAuth");
 
 router.post('/', authorisation, async (req, res) => {
-    if (req.user.role !== "worker") {
-        return sendHttp(res, StatusCodes.FORBIDDEN, 'Only workers can initialize products');
-    }
+    if (checkError(res, validateRole(req.user.role, 'worker'))) return;
     const required = ['file'];
     if (checkError(res, validateFields(required, req.body, "POST"))) return;
     const { file } = req.body;
