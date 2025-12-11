@@ -2,7 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const {StatusCodes} = require('http-status-codes');
 const {sendHttp} = require('./utils/errorHandler');
-const { authorisation } = require('./utils/jwtAuth');
 const app = express();
 
 app.use(express.json({
@@ -27,21 +26,21 @@ const productsRouter = require('./routes/products');
 const categoriesRouter = require('./routes/categories');
 const ordersRouter = require('./routes/orders');
 const statusRouter = require('./routes/status');
-const customersRouter = require('./routes/customers');
+const profileRouter = require('./routes/profile');
 const registerRouter = require('./routes/register');
 const loginRouter = require('./routes/login');
 const refreshRouter = require('./routes/refresh');
 const initRouter = require('./routes/init');
 
-app.use('/products', authorisation, productsRouter);
-app.use('/categories', authorisation, categoriesRouter);
-app.use('/orders', authorisation, ordersRouter);
-app.use('/status', authorisation, statusRouter);
-app.use('/customers', authorisation, customersRouter);
+app.use('/products', productsRouter);
+app.use('/categories', categoriesRouter);
+app.use('/orders', ordersRouter);
+app.use('/status', statusRouter);
+app.use('/profile', profileRouter);
 app.use('/register', registerRouter);
 app.use('/login', loginRouter);
 app.use('/refresh', refreshRouter);
-app.use('/init', authorisation, initRouter);
+app.use('/init', initRouter);
 
 
 

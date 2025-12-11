@@ -54,6 +54,9 @@ function validateNumber(value, fieldName, isInteger = false) {
     if (fieldName === 'discount' && value > 1) {
         return (`Field discount must be in range 0-1`);
     }
+    if (fieldName === ('rating') && (value < 1 || value > 5)) {
+        return (`Field rating must be in range 1-5`);
+    }
     return null;
 }
 
@@ -64,6 +67,7 @@ async function validateId(pool, id, query, fieldName) {
     const idCheck = await pool.request()
         .input(`${fieldName}Id`, sql.Int, id)
         .query(query);
+
     if (idCheck.recordset.length === 0) {
         return (`A ${fieldName} with id ${id} does not exist`);
     }
@@ -197,15 +201,23 @@ function validatePassword(password) {
     if (!/[A-Z]/.test(password)) return 'Password must contain at least one uppercase letter';
     if (!/[a-z]/.test(password)) return 'Password must contain at least one lowercase letter';
     if (!/[0-9]/.test(password)) return 'Password must contain at least one number';
-    return null; // hasło poprawne
+    return null;
 }
 
 function checkError(res, errorMessage) {
     if (errorMessage !== null) {
+        console.log(errorMessage);
         sendHttp(res, StatusCodes.BAD_REQUEST, errorMessage);
         return true;
     }
     return false;
+}
+
+function validateRole(role, expectedRole) {
+    if (role !== expectedRole) {
+        return (`This action is supposed to be performed only by ${expectedRole}s - you are ${role}`);
+    }
+    return null;
 }
 
 module.exports = {
@@ -220,5 +232,6 @@ module.exports = {
     validatePhone,
     validateStatus,
     validateLogin,
-    validatePassword
+    validatePassword,
+    validateRole
 };

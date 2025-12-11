@@ -6,9 +6,8 @@ const sql = require("mssql");
 const {StatusCodes} = require("http-status-codes");
 const {sendHttp} = require('../utils/errorHandler');
 const {getPool} = require("../database");
-const {
-    checkError, validateFields, validateAll, validateString, validateNumber, validateId
-} = require("../utils/validators");
+const {authorisation} = require('../utils/jwtAuth');
+const {checkError, validateFields, validateAll, validateString, validateNumber, validateId, validateRole} = require("../utils/validators");
 const Groq = require("groq-sdk");
 
 router.get('/', async (req, res) => {
@@ -35,13 +34,9 @@ router.get('/:id/seo-description', async (req, res) => {
             .replace('{category}', category);
         const groq = new Groq({apiKey: process.env.Groq_API_KEY});
         const response = await groq.chat.completions.create({
-            messages: [
-                {
-                    role: "user",
-                    content: prompt,
-                },
-            ],
-            model: process.env.GROQ_MODEL,
+            messages: [{
+                role: "user", content: prompt,
+            },], model: process.env.GROQ_MODEL,
         });
         const seoHtml = response.choices?.[0]?.message?.content;
 
@@ -51,13 +46,13 @@ router.get('/:id/seo-description', async (req, res) => {
         } else {
             sendHttp(res, StatusCodes.INTERNAL_SERVER_ERROR, 'A problem has occurred while creating description');
         }
-    }
-    catch (err) {
+    } catch (err) {
         sendHttp(res, StatusCodes.INTERNAL_SERVER_ERROR, `Server error: ${err.message}`);
     }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', authorisation, async (req, res) => {
+    if (checkError(res, validateRole(req.user.role, 'worker'))) return;
     const required = ['name', 'description', 'price', 'weight', 'categoryId'];
     if (checkError(res, validateFields(required, req.body, "POST"))) return;
     const {name, description, price, weight, categoryId} = req.body;
@@ -79,7 +74,8 @@ router.post('/', async (req, res) => {
     }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', authorisation, async (req, res) => {
+    if (checkError(res, validateRole(req.user.role, 'worker'))) return;
     const productId = parseInt(req.params.id, 10);
     const allowedFields = ['name', 'description', 'price', 'weight', 'categoryId'];
     const updateFields = Object.keys(req.body).filter(f => allowedFields.includes(f));

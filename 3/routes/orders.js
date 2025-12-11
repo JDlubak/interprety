@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const {handleGetQuery} = require('../utils/getQueryHandler')
 const sql = require("mssql");
-const {checkError, validateFields, validateId, validateItems, validateStatus} = require("../utils/validators");
+const {checkError, validateFields, validateId, validateItems, validateStatus, validateString, validateNumber, validateRole} = require("../utils/validators");
 const {sendHttp} = require("../utils/errorHandler");
 const {StatusCodes} = require("http-status-codes");
 const {getPool} = require("../database");
@@ -22,9 +22,10 @@ router.post('/', async (req, res) => {
     const {customerId, items} = req.body;
     try {
         const pool = await getPool();
+        console.log('lol');
         if (checkError(res, await validateId(pool, customerId, process.env.CHECK_CUSTOMER, 'customer'))) return;
+        console.log('lol');
         if (checkError(res, await validateItems(items, pool))) return;
-
         const transaction = new sql.Transaction(pool);
         await transaction.begin();
         try {
@@ -79,6 +80,39 @@ router.patch('/:id', async (req, res) => {
     } catch (err) {
         sendHttp(res, StatusCodes.INTERNAL_SERVER_ERROR, `Server error: ${err.message}`);
     }
+})
+
+router.post('/:id/opinions', async (req, res) => {
+    if (checkError(res, validateRole(req.user.role, 'customer'))) return;
+    const userId = parseInt(req.user.id, 10);
+    console.log(req.user.role);
+    const orderId = parseInt(req.params.id, 10);
+    const allowedFields = ['rating', 'content'];
+    const updateFields = Object.keys(req.body).filter(f => allowedFields.includes(f));
+    if (updateFields.length === 0) {
+        return sendHttp(res, StatusCodes.BAD_REQUEST, "Posting opinion requires 'rating' field, and optionally 'content' field");
+    }
+    if (checkError(res, validateFields(allowedFields, req.body, "POST_OPINION"))) return;
+    const {rating, content} = req.body;
+    if (checkError(res, validateNumber(rating, 'rating', true))) return;
+    if (checkError(res, validateString(content, 'content'))) return;
+    try {
+        const pool = await getPool();
+        if (checkError(res, await validateId(pool, orderId, process.env.CHECK_ORDER, 'order'))) return;
+        if (checkError(res, await validateOrder(pool, orderId, process.env.CHECK_ORDER))) return;
+        const request = await pool.request();
+        request.input('orderId', sql.Int, orderId);
+        request.input('rating', sql.Int, rating);
+        request.input('content', sql.VarChar(sql.MAX), content);
+        await request.query(process.env.CREATE_OPINION);
+        res.status(StatusCodes.CREATED).json({
+            StatusCode: StatusCodes.CREATED, message: `Opinion has been created!`
+        });
+    } catch (err) {
+        sendHttp(res, StatusCodes.INTERNAL_SERVER_ERROR, `Server error: ${err.message}`);
+    }
+
+
 })
 
 

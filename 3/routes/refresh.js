@@ -19,7 +19,6 @@ router.post("/", async (req, res) => {
         const request = pool.request();
         request.input("refreshToken", sql.VarChar(sql.MAX), refreshToken);
         const result = await request.query(process.env.CHECK_REFRESH_TOKEN);
-        console.log(result);
         if (result.recordset.length === 0) {
             return sendHttp(res, StatusCodes.UNAUTHORIZED, 'Invalid refresh token');
         }
