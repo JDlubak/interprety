@@ -1,12 +1,12 @@
 const express = require('express');
 const bcrypt = require("bcryptjs");
-const sql = require("mssql");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
 const {validateFields, checkError } = require('../utils/validators');
 const {getPool} = require("../database");
 const {StatusCodes} = require("http-status-codes");
 const {sendHttp} = require("../utils/errorHandler");
+const sql = require("mssql");
 
 router.post("/", async (req, res) => {
     const required = ['login', 'password'];
@@ -41,7 +41,8 @@ router.post("/", async (req, res) => {
         const refreshRequest = pool.request();
         refreshRequest.input("id", sql.Int, id);
         refreshRequest.input("refreshToken", sql.VarChar(sql.MAX), refreshToken);
-        await refreshRequest.query(process.env.PUT_REFRESH_TOKEN);
+        refreshRequest.input("accessToken", sql.VarChar(sql.MAX), accessToken);
+        await refreshRequest.query(process.env.PUT_TOKENS);
         return res.json({
             accessToken: accessToken,
             refreshToken: refreshToken
