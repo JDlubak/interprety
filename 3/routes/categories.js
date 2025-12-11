@@ -1,11 +1,9 @@
-require('dotenv').config();
 const express = require('express');
 const router = express.Router();
-const {handleGetQuery} = require('../utils/getQueryHandler')
+const categoriesController = require('../controllers/categoriesController');
 
 
-router.get('/', async (req, res) => {
-    await handleGetQuery(res, process.env.CATEGORY_QUERY);
-});
+
+router.get('/', categoriesController.getAllCategories);
 
 module.exports = router;
