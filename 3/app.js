@@ -43,9 +43,6 @@ app.use('/refresh', refreshRouter);
 app.use('/init', initRouter);
 
 
-
-
-
 app.get('/', (req, res) => {
     sendHttp(res, StatusCodes.OK, 'Zadanie 3');
 });

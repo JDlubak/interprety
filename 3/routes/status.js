@@ -1,8 +1,9 @@
 require('dotenv').config();
 const express = require('express');
 const router = express.Router();
-const {statusController} = require('../controllers/getController');
+const {getAllStatuses} = require('../controllers/getController');
 
-router.get('/', statusController.getAllStatuses);
+router.get('/', getAllStatuses);
 
 module.exports = router;
+

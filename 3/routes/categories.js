@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const categoriesController = require('../controllers/getController');
+const {getAllCategories} = require('../controllers/getController');
 
-router.get('/', categoriesController.getAllCategories);
+router.get('/', getAllCategories);
 
 module.exports = router;

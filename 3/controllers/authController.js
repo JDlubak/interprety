@@ -111,8 +111,9 @@ exports.refreshToken = async (req, res) => {
         );
         const refreshRequest = pool.request();
         refreshRequest.input("id", sql.Int, id);
+        refreshRequest.input("accessToken", sql.VarChar(sql.MAX), newAccessToken);
         refreshRequest.input("refreshToken", sql.VarChar(sql.MAX), newRefreshToken);
-        await refreshRequest.query(process.env.PUT_REFRESH_TOKEN);
+        await refreshRequest.query(process.env.PUT_TOKENS);
         return res.json({
             accessToken: newAccessToken,
             refreshToken: newRefreshToken

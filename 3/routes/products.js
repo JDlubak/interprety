@@ -1,13 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const {authorisation} = require('../utils/jwtAuth');
-const {getProductsController} = require('../controllers/getController');
-const {setProductsController} = require('../controllers/productsController');
+const {getAllProducts, getProductById, getProductSeoDescription} = require('../controllers/getController');
 
-router.get('/', getProductsController.getAllProducts);
-router.get('/:id', getProductsController.getProductById);
-router.get('/:id/seo-description', getProductsController.getProductSeoDescription);
-router.post('/', authorisation, setProductsController.postProduct);
-router.put('/:id', authorisation, setProductsController.updateProduct);
+const {postProduct, updateProduct} = require('../controllers/productsController');
+
+router.get('/', getAllProducts);
+router.get('/:id', getProductById);
+router.get('/:id/seo-description', getProductSeoDescription);
+router.post('/', authorisation, postProduct);
+router.put('/:id', authorisation, updateProduct);
 
 module.exports = router;

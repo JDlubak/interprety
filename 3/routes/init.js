@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const {authorisation} = require("../utils/jwtAuth");
+const {initializeDatabase} = require('../controllers/productsController');
 
-const {productsController} = require('../controllers/productsController');
-router.post('/', authorisation, productsController.initializeDatabase);
+router.post('/', authorisation, initializeDatabase);
 
 module.exports = router;

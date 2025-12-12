@@ -25,7 +25,7 @@ async function authorisation(req, res, next) {
             return sendHttp(res, StatusCodes.UNAUTHORIZED, "User no longer exists");
         }
         if (latestToken !== token) {
-            return sendHttp(res, StatusCodes.UNAUTHORIZED, "This token is no longer valid - please use the one from your last login attempt");
+            return sendHttp(res, StatusCodes.UNAUTHORIZED, "This token is no longer valid - please use the one from your last login attempt or refresh");
         }
         next();
     } catch (err) {

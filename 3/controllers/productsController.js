@@ -37,12 +37,12 @@ exports.updateProduct = async (req, res) => {
     if (checkError(res, validateRole(req.user.role, 'worker'))) return;
     const productId = parseInt(req.params.id, 10);
     const allowedFields = ['name', 'description', 'price', 'weight', 'categoryId'];
-    const updateFields = Object.keys(req.body).filter(f => allowedFields.includes(f));
+    const updateFields = Object.keys(req.body || {}).filter(f => allowedFields.includes(f));
     if (updateFields.length === 0) {
         return sendHttp(res, StatusCodes.BAD_REQUEST, 'No valid fields to update!');
     }
     if (checkError(res, validateFields(allowedFields, req.body, "PUT"))) return;
-    const {name, description, price, weight, categoryId} = req.body;
+    const {name, description, price, weight, categoryId} = req.body || {};
     try {
         const pool = await getPool();
         if (checkError(res, await validateId(pool, productId, process.env.CHECK_PRODUCT, 'product'))) return;

@@ -8,19 +8,20 @@ const {
     checkError, validateId, validateRole
 } = require("../utils/validators");
 
-async function handleGetQuery(res, query, params = []) {
+async function handleGetQuery(res, query, params = [], isCustomerAllOrdersQuery = false) {
     try {
         const pool = await getPool();
         const request = pool.request();
-
         for (const param of params) {
             request.input(param.name, param.type, param.value);
         }
         const result = await request.query(query);
-        if (params.length > 0 && result.recordset.length === 0) {
+        if (params.length > 0 && result.recordset.length === 0 && !isCustomerAllOrdersQuery) {
             const idParam = params.find(p => p.name === 'id');
             const idValue = idParam ? idParam.value : undefined;
             return sendHttp(res, StatusCodes.NOT_FOUND, `Record with id ${idValue} not found`);
+        } else if (isCustomerAllOrdersQuery) {
+            return sendHttp(res, StatusCodes.NOT_FOUND, `You don't have any orders!`);
         }
         return sendHttp(res, StatusCodes.OK, result.recordset);
     } catch (err) {
@@ -41,7 +42,13 @@ exports.getAllProducts = async (req, res) => {
 }
 
 exports.getAllOrders = async (req, res) => {
-    await handleGetQuery(res, process.env.ORDERS_QUERY);
+    if (req.user.role === 'worker') {
+        await handleGetQuery(res, process.env.ORDERS_WORKER_QUERY);
+    } else {
+        await handleGetQuery(res, process.env.ORDERS_CUSTOMER_QUERY, [{
+            name: 'id', type: sql.Int, value: req.user.id
+        }], true);
+    }
 }
 
 exports.getProductById = async (req, res) => {
@@ -49,7 +56,13 @@ exports.getProductById = async (req, res) => {
 }
 
 exports.getOrderById = async (req, res) => {
-    await handleGetQuery(res, process.env.ORDERS_ID_QUERY, [{name: 'id', type: sql.Int, value: req.params.id}]);
+    if (req.user.role === 'worker') {
+        await handleGetQuery(res, process.env.ORDERS_ID_QUERY_WORKER, [{name: 'id', type: sql.Int, value: req.params.id}]);
+    } else {
+        await handleGetQuery(res, process.env.ORDERS_ID_QUERY_CUSTOMER,
+            [{name: 'id', type: sql.Int, value: req.params.id},
+                {name: 'userId', type: sql.Int, value: req.user.id}]);
+    }
 }
 
 exports.getProfile = async (req, res) => {

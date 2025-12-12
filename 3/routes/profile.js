@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const {getController} = require('../controllers/authController');
+const {getProfile} = require('../controllers/getController');
 const {authorisation} = require('../utils/jwtAuth');
 
-router.get('/', authorisation, getController.getProfile);
+router.get('/', authorisation, getProfile);
 
 module.exports = router;

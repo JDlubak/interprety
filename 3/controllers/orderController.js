@@ -14,9 +14,7 @@ exports.createOrder = async (req, res) => {
     const {customerId, items} = req.body;
     try {
         const pool = await getPool();
-        console.log('lol');
         if (checkError(res, await validateId(pool, customerId, process.env.CHECK_CUSTOMER, 'customer'))) return;
-        console.log('lol');
         if (checkError(res, await validateItems(items, pool))) return;
         const transaction = new sql.Transaction(pool);
         await transaction.begin();
