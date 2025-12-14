@@ -1,6 +1,6 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const {getPool} = require("../database");
+const {getPool} = require("../utils/database");
 const {StatusCodes} = require("http-status-codes");
 const {sendHttp} = require("../utils/errorHandler");
 const sql = require("mssql");

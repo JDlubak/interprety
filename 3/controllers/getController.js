@@ -1,5 +1,5 @@
 require('dotenv').config();
-const {getPool} = require('../database');
+const {getPool} = require('../utils/database');
 const {StatusCodes} = require('http-status-codes');
 const {sendHttp} = require('../utils/errorHandler');
 const sql = require("mssql");
@@ -57,7 +57,11 @@ exports.getProductById = async (req, res) => {
 
 exports.getOrderById = async (req, res) => {
     if (req.user.role === 'worker') {
-        await handleGetQuery(res, process.env.ORDERS_ID_QUERY_WORKER, [{name: 'id', type: sql.Int, value: req.params.id}]);
+        await handleGetQuery(res, process.env.ORDERS_ID_QUERY_WORKER, [{
+            name: 'id',
+            type: sql.Int,
+            value: req.params.id
+        }]);
     } else {
         await handleGetQuery(res, process.env.ORDERS_ID_QUERY_CUSTOMER,
             [{name: 'id', type: sql.Int, value: req.params.id},
@@ -100,5 +104,19 @@ exports.getProductSeoDescription = async (req, res) => {
         }
     } catch (err) {
         sendHttp(res, StatusCodes.INTERNAL_SERVER_ERROR, `Server error: ${err.message}`);
+    }
+}
+
+exports.getOrderOpinion = async (req, res) => {
+    const orderId = parseInt(req.params.id);
+    if (req.user.role === 'worker') {
+        await handleGetQuery(res, process.env.ORDER_OPINION_WORKER_QUERY, [
+            {name: 'id', type: sql.Int, value: orderId}
+        ]);
+    } else {
+        await handleGetQuery(res, process.env.ORDER_OPINION_CUSTOMER_QUERY, [
+            {name: 'id', type: sql.Int, value: orderId},
+            {name: 'userId', type: sql.Int, value: req.user.id}
+        ]);
     }
 }

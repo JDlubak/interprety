@@ -1,14 +1,15 @@
 require('dotenv').config();
 const sql = require("mssql");
 const {
-    checkError, validateFields, validateId, validateItems, validateStatus, validateString, validateNumber, validateRole
+    checkError, validateFields, validateId, validateItems, validateStatus, validateString, validateNumber, validateRole, validateOrder
 } = require("../utils/validators");
 const {sendHttp} = require("../utils/errorHandler");
 const {StatusCodes} = require("http-status-codes");
-const {getPool} = require("../database");
+const {getPool} = require("../utils/database");
 
 
 exports.createOrder = async (req, res) => {
+    if (checkError(res, validateRole(req.user.role, 'customer'))) return;
     const required = ['customerId', 'items'];
     if (checkError(res, validateFields(required, req.body, "POST"))) return;
     const {customerId, items} = req.body;
@@ -47,6 +48,7 @@ exports.createOrder = async (req, res) => {
 }
 
 exports.changeOrderStatus = async (req, res) => {
+    if (checkError(res, validateRole(req.user.role, 'worker'))) return;
     const statusToId = {
         UNCONFIRMED: 1, CONFIRMED: 2, CANCELLED: 3, COMPLETED: 4
     };
@@ -75,7 +77,6 @@ exports.changeOrderStatus = async (req, res) => {
 exports.addOpinionToOrder = async (req, res) => {
     if (checkError(res, validateRole(req.user.role, 'customer'))) return;
     const userId = parseInt(req.user.id, 10);
-    console.log(req.user.role);
     const orderId = parseInt(req.params.id, 10);
     const allowedFields = ['rating', 'content'];
     const updateFields = Object.keys(req.body).filter(f => allowedFields.includes(f));
@@ -89,7 +90,7 @@ exports.addOpinionToOrder = async (req, res) => {
     try {
         const pool = await getPool();
         if (checkError(res, await validateId(pool, orderId, process.env.CHECK_ORDER, 'order'))) return;
-        if (checkError(res, await validateOrder(pool, orderId, process.env.CHECK_ORDER))) return;
+        if (checkError(res, await validateOrder(pool, orderId, userId))) return;
         const request = await pool.request();
         request.input('orderId', sql.Int, orderId);
         request.input('rating', sql.Int, rating);

@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const {StatusCodes} = require('http-status-codes');
 const {sendHttp} = require("./errorHandler");
-const {getPool} = require("../database")
+const {getPool} = require("./database")
 const sql = require("mssql");
 
 

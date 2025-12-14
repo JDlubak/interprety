@@ -219,6 +219,21 @@ function validateRole(role, expectedRole) {
     return null;
 }
 
+async function validateOrder(pool, orderId, userId) {
+    const request = await pool.request();
+    request.input('orderId', sql.Int, orderId);
+    request.input('userId', sql.Int, userId);
+    const result = await request.query(process.env.CHECK_ORDER_CUSTOMER);
+    if (result.recordset.length === 0) {
+        return ("You are not allowed to post opinions on this order");
+    }
+    const orderStatus = result.recordset[0].status;
+    if (orderStatus === "CANCELLED" || orderStatus === "COMPLETED") {
+        return null;
+    }
+    return (`To post opinion, order needs to be COMPLETED or CANCELLED - this one is still ${orderStatus}`);
+}
+
 module.exports = {
     checkError,
     validateFields,
@@ -232,5 +247,6 @@ module.exports = {
     validateStatus,
     validateLogin,
     validatePassword,
-    validateRole
+    validateRole,
+    validateOrder
 };
