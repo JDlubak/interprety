@@ -3,6 +3,9 @@ const express = require('express');
 const {StatusCodes} = require('http-status-codes');
 const {sendHttp} = require('./utils/errorHandler');
 const app = express();
+const cors = require("cors");
+
+app.use(cors());
 
 app.use(express.json({
     strict: true, verify: (req, res, buf) => {
