@@ -31,13 +31,13 @@ const handleLogin = async () => {
     <h1 class="text-center mb-4">Login</h1>
     <form @submit.prevent="handleLogin">
       <div class="mb-3">
-        <label for="login" class="form-label">Email or Username</label>
+        <label for="login" class="form-label">Login</label>
         <input
             type="text"
             id="login"
             class="form-control"
             v-model="loginField"
-            placeholder="Enter your email or username"
+            placeholder="Enter your login"
             required
         />
       </div>
