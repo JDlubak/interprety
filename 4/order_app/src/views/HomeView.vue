@@ -1,25 +1,24 @@
 <script setup>
 import { useRouter } from 'vue-router';
+import { getRoleFromToken } from "../services/auth.js";
 
 const router = useRouter();
 
 const handleLogout = () => {
-  localStorage.removeItem('accessToken');
-  localStorage.removeItem('refreshToken');
+  localStorage.clear();
   router.push('/login');
 };
 
-const viewProducts = () => {
-  router.push('/products');
+const token = localStorage.getItem('accessToken');
+const role = getRoleFromToken(token);
+if (!token || !role || !['worker', 'customer'].includes(role)) {
+  handleLogout();
 }
 
-const viewCart = () => {
-  router.push('/cart');
-}
+const viewProducts = () => router.push('/products');
+const viewCart = () => router.push('/cart');
 
 </script>
-
-const
 
 <template>
   <div class="container mt-5" style="max-width: 600px;">
@@ -28,7 +27,7 @@ const
         <button class="btn btn-danger mt-3" @click="handleLogout">Logout</button>
         <div class="d-flex justify-content-center mt-3 gap-2">
           <button class="btn btn-warning" @click="viewProducts">Products</button>
-          <button class="btn btn-warning" @click="viewCart">Cart</button>
+          <button class="btn btn-warning" @click="viewCart" v-if="role === 'customer'">Cart</button>
         </div>
       </div>
     </div>
