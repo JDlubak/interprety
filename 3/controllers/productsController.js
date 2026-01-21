@@ -12,15 +12,14 @@ const {
 
 exports.postProduct = async (req, res) => {
     if (checkError(res, validateRole(req.user.role, 'worker'))) return;
-    const required = ['name', 'description', 'price', 'weight', 'categoryId'];
+    const required = ['name', 'price', 'weight', 'categoryId'];
     if (checkError(res, validateFields(required, req.body, "POST"))) return;
-    const {name, description, price, weight, categoryId} = req.body;
+    const {name, price, weight, categoryId} = req.body;
     try {
         const pool = await getPool();
-        if (checkError(res, await validateAll(name, description, price, weight, categoryId, pool))) return;
+        if (checkError(res, await validateAll(name, price, weight, categoryId, pool))) return;
         const request = pool.request();
         request.input('name', sql.VarChar, name);
-        request.input('description', sql.VarChar, description);
         request.input('price', sql.Decimal(10, 2), price);
         request.input('weight', sql.Decimal(10, 3), weight);
         request.input('categoryId', sql.Int, categoryId);
@@ -91,68 +90,56 @@ exports.updateProduct = async (req, res) => {
 
 exports.initializeDatabase = async (req, res) => {
     if (checkError(res, validateRole(req.user.role, 'worker'))) return;
-    const required = ['file'];
-    if (checkError(res, validateFields(required, req.body, "POST"))) return;
-    const {file} = req.body;
-    if (!fs.existsSync(file)) {
-        return sendHttp(res, StatusCodes.BAD_REQUEST, 'File not found on server');
+
+    const { products } = req.body;
+    if (!products || !Array.isArray(products) || products.length === 0) {
+        return sendHttp(res, StatusCodes.BAD_REQUEST, 'No data to initialize DB!');
     }
-    if (!file.toLowerCase().endsWith('.csv')) {
-        return sendHttp(res, StatusCodes.BAD_REQUEST, 'File must have .csv extension');
-    }
+
     try {
         const pool = await getPool();
+
         const result = await pool.query(process.env.PRODUCTS_QUERY);
         if (result.recordset.length > 0) {
             return sendHttp(res, StatusCodes.BAD_REQUEST, 'Unable to process - products already exist in the database');
         }
-        const products = [];
-        fs.createReadStream(file)
-            .pipe(csv())
-            .on('data', (row) => {
-                if (!row.name || !row.description || !row.price || !row.weight || !row.category_id) {
-                    throw new Error('Missing required fields');
-                }
-                products.push({
-                    name: row.name,
-                    description: row.description || '',
-                    price: parseFloat(row.price),
-                    weight: parseFloat(row.weight),
-                    categoryId: parseInt(row.category_id)
-                });
-            })
-            .on('error', (err) => {
-                return sendHttp(res, StatusCodes.BAD_REQUEST, 'CSV read error: Make sure you uploaded proper .csv file');
-            })
-            .on('end', async () => {
-                const errors = [];
-                for (const [index, row] of products.entries()) {
-                    let err = await validateAll(row.name, row.description, row.price, row.weight, row.categoryId, pool);
-                    if (err) errors.push(`Row ${index + 1}: ${err}`);
-                }
-                if (errors.length > 0) {
-                    return sendHttp(res, StatusCodes.BAD_REQUEST, `Validation failed: ${errors.join(', ')}`);
-                }
-                const transaction = new sql.Transaction(pool);
-                try {
-                    await transaction.begin();
-                    for (const product of products) {
-                        const request = transaction.request();
-                        request.input('name', sql.VarChar, product.name);
-                        request.input('description', sql.VarChar, product.description);
-                        request.input('price', sql.Decimal(10, 2), product.price);
-                        request.input('weight', sql.Decimal(10, 3), product.weight);
-                        request.input('categoryId', sql.Int, product.categoryId);
-                        await request.query(process.env.INSERT_PRODUCT);
-                    }
-                    await transaction.commit();
-                    return sendHttp(res, StatusCodes.OK, 'Products initialized');
-                } catch (err) {
-                    await transaction.rollback();
-                    return sendHttp(res, StatusCodes.INTERNAL_SERVER_ERROR, `DB error: ${err.message}`);
 
-                }
-            });
+        const validationErrors = [];
+        for (const [index, p] of products.entries()) {
+            if (!p.name || p.price === undefined || p.weight === undefined || !p.category_id) {
+                validationErrors.push(`Row ${index + 1}: Missing fields`);
+                continue;
+            }
+
+            const err = await validateAll(p.name, p.price, p.weight, p.category_id, pool);
+            if (err) validationErrors.push(`Row ${index + 1}: ${err}`);
+        }
+
+        if (validationErrors.length > 0) {
+            return sendHttp(res, StatusCodes.BAD_REQUEST, `Validations errors: ${validationErrors.join(', ')}`);
+        }
+
+        const transaction = new sql.Transaction(pool);
+        try {
+            await transaction.begin();
+            for (const product of products) {
+                const request = transaction.request();
+                request.input('name', sql.VarChar, product.name);
+                request.input('description', sql.VarChar, product.description || '');
+                request.input('price', sql.Decimal(10, 2), product.price);
+                request.input('weight', sql.Decimal(10, 3), product.weight);
+                request.input('categoryId', sql.Int, product.category_id);
+
+                await request.query(process.env.INSERT_PRODUCT);
+            }
+            await transaction.commit();
+            return sendHttp(res, StatusCodes.OK, 'Products initialized');
+
+        } catch (err) {
+            await transaction.rollback();
+            return sendHttp(res, StatusCodes.INTERNAL_SERVER_ERROR, `DB error: ${err.message}`);
+        }
+
     } catch (err) {
         return sendHttp(res, StatusCodes.INTERNAL_SERVER_ERROR, `Server error: ${err.message}`);
     }

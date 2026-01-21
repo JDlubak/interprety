@@ -19,8 +19,8 @@ function validateFields(fieldsList, body, method) {
     return null;
 }
 
-async function validateAll(name, description, price, weight, categoryId, pool) {
-    const errors = [validateString(name, 'name', 100), validateString(description, 'description'), validateNumber(price, 'price'), validateNumber(weight, 'weight'), await validateId(pool, categoryId, process.env.CHECK_CATEGORY, 'category')]
+async function validateAll(name, price, weight, categoryId, pool) {
+    const errors = [validateString(name, 'name', 100), validateNumber(price, 'price'), validateNumber(weight, 'weight'), await validateId(pool, categoryId, process.env.CHECK_CATEGORY, 'category')]
     const error = errors.find(e => e !== null);
     return error ? error : null;
 }
@@ -29,7 +29,7 @@ function validateString(value, fieldName, maxLength = null) {
     if (typeof value !== 'string') {
         return (`Field ${fieldName} must be a string`);
     }
-    if (value.trim().length === 0) {
+    if (value.trim().length === 0 && fieldName !== 'description') {
         return (`Field ${fieldName} must be a non-empty string`);
     }
     if (maxLength && value.length > maxLength) {
@@ -91,7 +91,7 @@ async function validateEmail(value, pool) {
     const request = await pool.request();
     const result = await request.query(process.env.GET_EMAILS);
     if (result.recordset.some(row => row.email === value)) {
-        return ('This email already exists in database - try another one')
+        return ('You cannot use this email to create another account!')
     }
     return null;
 }
@@ -107,7 +107,7 @@ async function validatePhone(value, pool) {
     const request = await pool.request();
     const result = await request.query(process.env.GET_PHONES);
     if (result.recordset.some(row => row.phone === value)) {
-        return ('This phone already exists in database - try another one')
+        return ('You cannot use this phone to create another account!')
     }
     return null;
 }
@@ -181,6 +181,9 @@ async function validateStatus(pool, value, orderId) {
 }
 
 async function validateLogin(pool, login) {
+    if (login.length < 8) {
+        return ('Login needs to be at least 8 characters long');
+    }
     const potentialError = validateString(login, 'login', 30);
     if (potentialError) return potentialError;
     if (!/^[a-zA-Z0-9_]+$/.test(login)) {
@@ -190,7 +193,7 @@ async function validateLogin(pool, login) {
     request.input('login', sql.VarChar(30), login);
     const result = await request.query(process.env.CHECK_LOGIN);
     if (result.recordset.length > 0) {
-        return (`This login is already taken, choose another one or use /login to login`)
+        return (`This login is already taken, choose another one or proceed to login`)
     }
     return null;
 }
