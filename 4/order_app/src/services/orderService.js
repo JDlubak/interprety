@@ -1,23 +1,22 @@
 import {callApi} from './api';
-import {authHeader} from './auth.js';
 
 const PREFIX = '/orders'
 
 
-export const getOrders = async (token) =>
-    callApi('get', PREFIX, authHeader(token));
+export const getOrders = async () =>
+    callApi('get', PREFIX);
 
-export const getOrdersByStatus = (id, token) =>
-    callApi('get', `${PREFIX}/status/${id}`, authHeader(token));
+export const getOrdersByStatus = (id) =>
+    callApi('get', `${PREFIX}/status/${id}`);
 
-export const createOrder = (data, token) =>
-    callApi('post', PREFIX, data, authHeader(token));
+export const createOrder = (data) =>
+    callApi('post', PREFIX, data);
 
-export const changeOrderStatus = (id, data, token) =>
-    callApi('patch', `${PREFIX}/${id}`, data, authHeader(token));
+export const changeOrderStatus = (id, data) =>
+    callApi('patch', `${PREFIX}/${id}`, data);
 
-export const postOpinion = (id, data, token) =>
-    callApi('post', `${PREFIX}/${id}/opinions`, data, authHeader(token));
+export const postOpinion = (id, data) =>
+    callApi('post', `${PREFIX}/${id}/opinions`, data);
 
-export const getOpinion = (id, data, token) =>
-    callApi('get', `${PREFIX}/${id}/opinions`, data, authHeader(token));
+export const getOpinion = (id, data) =>
+    callApi('get', `${PREFIX}/${id}/opinions`, data);
