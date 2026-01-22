@@ -104,19 +104,14 @@ exports.refreshToken = async (req, res) => {
             process.env.JWT_SECRET,
             {expiresIn: process.env.JWT_EXPIRES_IN},
         )
-        const newRefreshToken = jwt.sign(
-            { id },
-            process.env.JWT_SECRET,
-            { expiresIn: `${process.env.JWT_REFRESH_EXPIRES_DAYS}d` }
-        );
         const refreshRequest = pool.request();
         refreshRequest.input("id", sql.Int, id);
         refreshRequest.input("accessToken", sql.VarChar(sql.MAX), newAccessToken);
-        refreshRequest.input("refreshToken", sql.VarChar(sql.MAX), newRefreshToken);
+        refreshRequest.input("refreshToken", sql.VarChar(sql.MAX), refreshToken);
         await refreshRequest.query(process.env.PUT_TOKENS);
         return res.json({
             accessToken: newAccessToken,
-            refreshToken: newRefreshToken
+            refreshToken: refreshToken
         });
     } catch (err) {
         sendHttp(res, StatusCodes.INTERNAL_SERVER_ERROR, `Server error: ${err.message}`);

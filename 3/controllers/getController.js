@@ -16,14 +16,16 @@ async function handleGetQuery(res, query, params = [], isCustomerAllOrdersQuery 
             request.input(param.name, param.type, param.value);
         }
         const result = await request.query(query);
-        if (params.length > 0 && result.recordset.length === 0 && !isCustomerAllOrdersQuery) {
-            const idParam = params.find(p => p.name === 'id');
-            const idValue = idParam ? idParam.value : undefined;
-            return sendHttp(res, StatusCodes.NOT_FOUND, `Record with id ${idValue} not found`);
-        } else if (isCustomerAllOrdersQuery) {
+        console.log(result);
+        if (result.recordset.length > 0) {
+            return sendHttp(res, StatusCodes.OK, result.recordset);
+        }
+        if (isCustomerAllOrdersQuery) {
             return sendHttp(res, StatusCodes.NOT_FOUND, `You don't have any orders!`);
         }
-        return sendHttp(res, StatusCodes.OK, result.recordset);
+        const idValue = params.find(p => p.name === 'id')?.value;
+        const message = idValue ? `Record with id ${idValue} not found` : "Record not found";
+        return sendHttp(res, StatusCodes.NOT_FOUND, message);
     } catch (err) {
         sendHttp(res, StatusCodes.INTERNAL_SERVER_ERROR, `Server error: ${err.message}`);
     }

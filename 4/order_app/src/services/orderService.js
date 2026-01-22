@@ -6,9 +6,6 @@ const PREFIX = '/orders'
 export const getOrders = async () =>
     callApi('get', PREFIX);
 
-export const getOrdersByStatus = (id) =>
-    callApi('get', `${PREFIX}/status/${id}`);
-
 export const createOrder = (data) =>
     callApi('post', PREFIX, data);
 

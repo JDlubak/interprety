@@ -4,13 +4,15 @@ import HomeView from "../views/HomeView.vue";
 import ProductView from "../views/ProductView.vue";
 import CartView from "../views/CartView.vue";
 import RegisterView from "../views/RegisterView.vue";
+import OrdersView from "../views/OrdersView.vue";
 
 const routes = [
     { path: '/login', name: 'Login', component: LoginView },
     { path: '/', name: 'Home', component: HomeView, meta: { requiresAuth: true }},
     { path: '/products', name: 'Products', component: ProductView, meta: { requiresAuth: true }},
     { path: '/cart', name: 'Cart', component: CartView, meta: { requiresAuth: true }},
-    { path: '/register', name: 'Register', component: RegisterView }
+    { path: '/register', name: 'Register', component: RegisterView },
+    { path: '/orders', name: 'Orders', component: OrdersView, meta: { requiresAuth: true } }
 ];
 
 const router = createRouter({

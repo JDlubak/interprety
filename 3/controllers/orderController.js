@@ -10,9 +10,9 @@ const {getPool} = require("../utils/database");
 
 exports.createOrder = async (req, res) => {
     if (checkError(res, validateRole(req.user.role, 'customer'))) return;
-    const required = ['customerId', 'items'];
+    const required = ['customerId', 'fullName', 'items'];
     if (checkError(res, validateFields(required, req.body, "POST"))) return;
-    const {customerId, items} = req.body;
+    const {customerId, fullName, items} = req.body;
     try {
         const pool = await getPool();
         if (checkError(res, await validateId(pool, customerId, process.env.CHECK_CUSTOMER, 'customer'))) return;
@@ -22,6 +22,7 @@ exports.createOrder = async (req, res) => {
         try {
             const request = transaction.request();
             request.input('customerId', sql.Int, customerId);
+            request.input('fullName', sql.VarChar, fullName);
             const orderResult = await request.query(process.env.INSERT_ORDER);
             const orderId = orderResult.recordset[0].order_id;
             for (const item of items) {
@@ -48,18 +49,37 @@ exports.createOrder = async (req, res) => {
 }
 
 exports.changeOrderStatus = async (req, res) => {
-    if (checkError(res, validateRole(req.user.role, 'worker'))) return;
-    const statusToId = {
-        UNCONFIRMED: 1, CONFIRMED: 2, CANCELLED: 3, COMPLETED: 4
-    };
+    const { role, id } = req.user;
+    console.log(req.user);
     const required = ["status"];
     if (checkError(res, validateFields(required, req.body, "PATCH"))) return;
     const status = req.body.status.toUpperCase();
+    const statusToId = {
+        UNCONFIRMED: 1, CONFIRMED: 2, CANCELLED: 3, COMPLETED: 4
+    };
     const orderId = parseInt(req.params.id, 10);
+    if (role === 'customer') {
+        if (status !== 'CANCELLED') {
+            return sendHttp(res, StatusCodes.FORBIDDEN, "Customers can only cancel orders!")
+        }
+    }
     try {
         const pool = await getPool();
         if (checkError(res, await validateId(pool, orderId, process.env.CHECK_ORDER, 'order'))) return;
         if (checkError(res, await validateStatus(pool, status, orderId))) return;
+        if (role === 'customer') {
+            const checkOwner = await pool.request()
+                .input('orderId', sql.Int, orderId)
+                .query(process.env.IS_THEIR_ORDER);
+            const customerId = await pool.request()
+                .input('id', sql.Int, id)
+                .query(process.env.GET_CUSTOMER_ID);
+            const owner = checkOwner.recordset[0]?.customer_id;
+            const owner2 = customerId.recordset[0]?.customer_id;
+            if (owner !== owner2) {
+                return sendHttp(res, StatusCodes.FORBIDDEN, "You can only cancel your own orders.");
+            }
+        }
         const statusId = statusToId[status];
         const request = await pool.request();
         const query = statusId === 2 ? process.env.CONFIRM_ORDER : process.env.PROCESS_ORDER;
