@@ -16,7 +16,6 @@ async function handleGetQuery(res, query, params = [], isCustomerAllOrdersQuery 
             request.input(param.name, param.type, param.value);
         }
         const result = await request.query(query);
-        console.log(result);
         if (result.recordset.length > 0) {
             return sendHttp(res, StatusCodes.OK, result.recordset);
         }
