@@ -166,7 +166,7 @@ onMounted(fetch);
 </script>
 
 <template>
-  <div class="container mt-5 pb-5">
+  <div class="container mt-5 pb-5 animate-in">
     <div class="d-flex align-items-center mb-4 border-bottom pb-3">
       <h1 class="me-auto mb-0">{{ showCreateForm ? 'New Product' : 'Products' }}</h1>
       <div class="btn-group shadow-sm">
@@ -315,6 +315,21 @@ onMounted(fetch);
 </template>
 
 <style scoped>
+.animate-in {
+  animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;

@@ -29,17 +29,20 @@ const handleLogin = async () => {
 </script>
 
 <template>
-  <div class="container mt-5" style="max-width: 400px;">
-    <div class="card shadow p-4">
-      <h1 class="text-center mb-4">Login</h1>
+  <div class="container mt-5 animate-in" style="max-width: 400px;">
+    <div class="card shadow border-0 p-4">
+      <div class="text-center mb-4">
+        <i class="bi bi-shield-lock-fill text-success" style="font-size: 3rem;"></i>
+        <h1 class="fw-bold mt-2">Login</h1>
+      </div>
 
       <form @submit.prevent="handleLogin">
         <div class="mb-3">
-          <label for="login" class="form-label">Login</label>
+          <label for="login" class="form-label fw-bold">Login</label>
           <input
               type="text"
               id="login"
-              class="form-control"
+              class="form-control shadow-sm"
               v-model="loginField"
               placeholder="Enter your login"
               required
@@ -47,28 +50,31 @@ const handleLogin = async () => {
         </div>
 
         <div class="mb-3">
-          <label for="password" class="form-label">Password</label>
+          <label for="password" class="form-label fw-bold">Password</label>
           <input
               type="password"
               id="password"
-              class="form-control"
+              class="form-control shadow-sm"
               v-model="password"
               placeholder="Enter your password"
               required
           />
         </div>
 
-        <button type="submit" class="btn btn-success w-100 py-2" :disabled="loading">
+        <button type="submit" class="btn btn-success w-100 py-2 mt-2 fw-bold shadow-sm" :disabled="loading">
+          <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
           {{ loading ? "Logging in..." : "Login" }}
         </button>
 
-        <div v-if="error" class="alert alert-danger mt-3 text-center mb-0">
-          {{ error }}
-        </div>
+        <Transition name="fade">
+          <div v-if="error" class="alert alert-danger mt-3 text-center mb-0 shadow-sm">
+            {{ error }}
+          </div>
+        </Transition>
       </form>
 
       <div class="text-center mt-4 border-top pt-3">
-        <span>Don't have an account? </span>
+        <span class="text-muted">Don't have an account? </span>
         <router-link to="/register" class="text-decoration-none fw-bold">
           Register here
         </router-link>
@@ -76,3 +82,36 @@ const handleLogin = async () => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.animate-in {
+  animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
+.btn-success {
+  transition: transform 0.2s;
+}
+
+.btn-success:active {
+  transform: scale(0.98);
+}
+</style>

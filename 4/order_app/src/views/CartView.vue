@@ -12,6 +12,8 @@ if (!token) router.push('/login');
 
 const status = ref({ message: '', type: 'success' });
 const actionLoading = ref(false);
+const orderFinished = ref(false);
+
 const contactForm = ref({
   id: null,
   name: '',
@@ -30,9 +32,8 @@ onMounted(async () => {
     const profileData = await getProfile();
     if (profileData && profileData.message && profileData.message[0]) {
       const p = profileData.message[0];
-      console.log(p);
       contactForm.value.id = p.customer_id;
-      contactForm.value.name = p.name || '';
+      contactForm.value.name = p.username || '';
       contactForm.value.email = p.email || '';
       contactForm.value.phone = p.phone || '';
     }
@@ -76,7 +77,7 @@ const handlePlaceOrder = async () => {
     await createOrder(orderData);
     notify("Order placed successfully!", "success");
     clearCart();
-    setTimeout(() => router.push('/'), 2000);
+    orderFinished.value = true;
   } catch (err) {
     notify(err.message || err, 'danger');
   } finally {
@@ -95,10 +96,11 @@ const changeQty = (id, delta) => {
 
 const goHome = () => router.push('/');
 const goProducts = () => router.push('/products');
+const goOrders = () => router.push('/orders');
 </script>
 
 <template>
-  <div class="container mt-5 pb-5">
+  <div class="container mt-5 pb-5 animate-in">
     <div class="d-flex align-items-center mb-4 border-bottom pb-3">
       <h1 class="me-auto mb-0">Checkout</h1>
       <div class="btn-group shadow-sm">
@@ -113,13 +115,27 @@ const goProducts = () => router.push('/products');
       </div>
     </Transition>
 
-    <div v-if="cart.length === 0" class="text-center py-5">
+    <div v-if="orderFinished" class="text-center py-5">
+      <div class="card shadow-sm border-0 p-5 bg-light mx-auto" style="max-width: 600px;">
+        <div class="mb-4">
+          <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+        </div>
+        <h2 class="fw-bold text-success">Thank you for your order!</h2>
+        <p class="fs-5 text-muted mb-4">Your order has been placed and is now being processed.</p>
+        <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
+          <button class="btn btn-primary btn-lg px-4" @click="goOrders">My Orders</button>
+          <button class="btn btn-outline-secondary btn-lg px-4" @click="goProducts">Continue Shopping</button>
+        </div>
+      </div>
+    </div>
+
+    <div v-else-if="cart.length === 0" class="text-center py-5">
       <p class="fs-4 text-muted">Your cart is empty.</p>
-      <button class="btn btn-primary" @click="goProducts">Browse Products</button>
+      <button class="btn btn-primary shadow-sm" @click="goProducts">Browse Products</button>
     </div>
 
     <div v-else class="row g-4">
-      <div class="col-lg-8">
+      <div class="col-lg-8 animate-fade-in" style="animation-delay: 0.1s;">
         <div class="table-responsive shadow-sm rounded">
           <table class="table table-hover table-bordered bg-white align-middle mb-0 text-center">
             <thead class="table-dark">
@@ -159,29 +175,30 @@ const goProducts = () => router.push('/products');
         <button class="btn btn-sm btn-link text-danger mt-2" @click="clearCart">Clear all items</button>
       </div>
 
-      <div class="col-lg-4">
+      <div class="col-lg-4 animate-fade-in" style="animation-delay: 0.2s;">
         <div class="card shadow-sm border-0 bg-light">
           <div class="card-body p-4">
-            <h4 class="mb-4">Contact Details</h4>
+            <h4 class="mb-4 fw-bold">Contact Details</h4>
             <form @submit.prevent="handlePlaceOrder">
               <div class="mb-3">
                 <label class="form-label small fw-bold">Full Name</label>
-                <input type="text" class="form-control" v-model="contactForm.name" required>
+                <input type="text" class="form-control shadow-sm" v-model="contactForm.name" required>
               </div>
               <div class="mb-3">
                 <label class="form-label small fw-bold text-muted">Email</label>
-                <input type="email" class="form-control text-center bg-light border-0"
+                <input type="email" class="form-control text-center bg-white border-0"
                        :value="contactForm.email" readonly>
                 <div class="form-text small">Email assigned to your account.</div>
               </div>
               <div class="mb-3">
                 <label class="form-label small fw-bold text-muted">Phone</label>
-                <input type="text" class="form-control text-center bg-light border-0"
+                <input type="text" class="form-control text-center bg-white border-0"
                        :value="contactForm.phone" readonly>
                 <div class="form-text small">Phone number assigned to your account.</div>
               </div>
               <hr>
-              <button type="submit" class="btn btn-success w-100 py-3 fw-bold shadow-sm" :disabled="actionLoading">
+              <button type="submit" class="btn btn-success w-100 py-3 fw-bold shadow-sm btn-place-order" :disabled="actionLoading">
+                <span v-if="actionLoading" class="spinner-border spinner-border-sm me-2"></span>
                 {{ actionLoading ? 'Processing...' : 'CONFIRM ORDER' }}
               </button>
             </form>
@@ -195,4 +212,33 @@ const goProducts = () => router.push('/products');
 <style scoped>
 .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+.animate-in {
+  animation: slideUp 0.6s ease-out forwards;
+}
+
+.animate-fade-in {
+  opacity: 0;
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.btn-place-order {
+  transition: transform 0.2s, background-color 0.2s;
+}
+.btn-place-order:hover:not(:disabled) {
+  transform: scale(1.02);
+}
+.btn-place-order:active:not(:disabled) {
+  transform: scale(0.98);
+}
 </style>
