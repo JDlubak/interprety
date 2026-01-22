@@ -95,7 +95,10 @@ const handleFileUpload = async (event) => {
 
 const handleAddToCart = (product) => {
   const quantity = Number(quantities.value[product.id]);
-  if (!quantity || quantity <= 0) return;
+  if (!quantity || quantity <= 0) {
+    notify("Please enter a valid quantity (greater than 0).", "danger");
+    return;
+  }
   addToCart(product, quantity);
   notify(`Added ${quantity} items to cart!`);
 };
@@ -246,17 +249,23 @@ onMounted(fetch);
           <table class="table table-hover table-bordered bg-white align-middle mb-0">
             <thead class="table-dark">
             <tr>
-              <th>Name</th><th>Price</th><th>Weight</th><th>Category</th>
-              <th v-if="role === 'customer'" style="width: 100px;">Qty</th><th>Actions</th>
+              <th class="text-center">Name</th>
+              <th class="text-center">Price</th>
+              <th class="text-center">Weight</th>
+              <th class="text-center">Category</th>
+              <th v-if="role === 'customer'" style="width: 100px;" class="text-center">Quantity</th>
+              <th class="text-center">Actions</th>
             </tr>
             </thead>
             <tbody>
             <tr v-for="product in filteredProducts" :key="product.id">
               <template v-if="role === 'customer'">
-                <td class="fw-bold">{{ product.product }}</td><td>{{ product.price }} $</td><td>{{ product.weight }} kg</td>
-                <td>{{ product.category }}</td>
-                <td><input type="number" class="form-control form-control-sm" v-model.number="quantities[product.id]"></td>
-                <td>
+                <td class="fw-bold text-center">{{ product.product }}</td>
+                <td class="text-center">{{ product.price }} $</td>
+                <td class="text-center">{{ product.weight }} kg</td>
+                <td class="text-center">{{ product.category }}</td>
+                <td class="text-center"><input type="number" class="form-control form-control-sm" v-model.number="quantities[product.id]"></td>
+                <td class="text-center">
                   <div class="btn-group w-100">
                     <button class="btn btn-primary btn-sm" @click="handleAddToCart(product)">Add</button>
                     <button class="btn btn-outline-info btn-sm" @click="viewDescription(product)">Details</button>
@@ -264,11 +273,11 @@ onMounted(fetch);
                 </td>
               </template>
               <template v-else-if="role === 'worker'">
-                <td><input type="text" class="form-control form-control-sm border-0" v-model="product.product" @change="updateField(product.id, 'name', product.product)"></td>
-                <td><input type="number" class="form-control form-control-sm border-0" v-model.number="product.price" @change="updateField(product.id, 'price', product.price)"></td>
-                <td><input type="number" class="form-control form-control-sm border-0" v-model.number="product.weight" @change="updateField(product.id, 'weight', product.weight)"></td>
-                <td><select class="form-select form-select-sm border-0" v-model="product.categoryId" @change="updateField(product.id, 'categoryId', product.categoryId)"><option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.category }}</option></select></td>
-                <td><button class="btn btn-sm btn-info w-100 text-white" @click="viewDescription(product)">Edit Description</button></td>
+                <td class="text-center"><input type="text" class="form-control form-control-sm border-0" v-model="product.product" @change="updateField(product.id, 'name', product.product)"></td>
+                <td class="text-center"><input type="number" class="form-control form-control-sm border-0" v-model.number="product.price" @change="updateField(product.id, 'price', product.price)"></td>
+                <td class="text-center"><input type="number" class="form-control form-control-sm border-0" v-model.number="product.weight" @change="updateField(product.id, 'weight', product.weight)"></td>
+                <td class="text-center"><select class="form-select form-select-sm border-0" v-model="product.categoryId" @change="updateField(product.id, 'categoryId', product.categoryId)"><option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.category }}</option></select></td>
+                <td class="text-center"><button class="btn btn-sm btn-info w-100 text-white" @click="viewDescription(product)">Edit Description</button></td>
               </template>
             </tr>
             </tbody>
