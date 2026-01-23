@@ -1,6 +1,17 @@
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
-export const cart = ref([]);
+const STORAGE_KEY = import.meta.env.VITE_STORAGE_KEY;
+
+const loadInitialCart = () => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : [];
+};
+
+export const cart = ref(loadInitialCart());
+
+watch(cart, (newCartValue) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newCartValue));
+}, { deep: true });
 
 export const addToCart = (product, quantity) => {
     const existing = cart.value.find(item => item.id === product.id);
@@ -8,7 +19,12 @@ export const addToCart = (product, quantity) => {
     if (existing) {
         existing.quantity += quantity;
     } else {
-        cart.value.push({...product, quantity: quantity});
+        cart.value.push({
+            id: product.id,
+            product: product.product || product.name,
+            price: product.price,
+            quantity: quantity
+        });
     }
 };
 
@@ -18,15 +34,15 @@ export const removeFromCart = (productId) => {
 
 export const clearCart = () => {
     cart.value = [];
+    localStorage.removeItem(STORAGE_KEY);
 }
 
 export const setQuantity = (productId, quantity) => {
     const existing = cart.value.find(item => item.id === productId);
     if (!existing) return;
-    if (quantity < 0) {
+    if (quantity <= 0) {
         removeFromCart(productId);
     } else {
         existing.quantity = quantity;
     }
-
 }

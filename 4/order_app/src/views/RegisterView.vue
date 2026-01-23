@@ -90,7 +90,7 @@ const handleRegister = async () => {
               id="reg-username"
               class="form-control shadow-sm"
               v-model="usernameField"
-              placeholder="How do you want to be refered as in your profile?"
+              placeholder="How do you want to be referred as in your profile?"
               required
           />
         </div>
@@ -153,14 +153,6 @@ const handleRegister = async () => {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
 }
 
 .btn-primary {

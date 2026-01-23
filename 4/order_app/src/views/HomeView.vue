@@ -53,69 +53,97 @@ const viewOrders = () => router.push('/orders');
 </script>
 
 <template>
-  <div class="container mt-5 animate-in" style="max-width: 700px;">
-    <div class="card shadow border-0">
-      <div class="card-header bg-dark text-white p-4 text-center rounded-top">
-        <div class="mb-2">
-          <i :class="role === 'worker' ? 'bi bi-person-badge' : 'bi bi-person-circle'" style="font-size: 2.5rem;"></i>
+  <div class="container mt-5 pb-5 animate-in" style="max-width: 750px;">
+    <div class="card shadow-lg border-0 rounded-4 overflow-hidden bg-white">
+      <div class="card-header bg-dark text-white p-5 text-center border-0 position-relative">
+        <div class="header-overlay"></div>
+        <div class="position-relative z-index-10">
+          <h1 class="display-6 fw-bold mb-0">Welcome, {{ role === 'worker' ? 'Staff Member' : 'Customer' }}</h1>
+          <p class="text-white-50 mt-2 mb-0" v-if="role === 'customer'">Manage your account and track your orders</p>
+          <p class="text-white-50 mt-2 mb-0" v-else>Operational dashboard and management</p>
         </div>
-        <h2 class="mb-0 fw-bold">Welcome, {{ role === 'worker' ? 'Staff Member' : 'Customer' }}</h2>
       </div>
 
-      <div class="card-body p-4">
+      <div class="card-body p-4 p-md-5">
         <div v-if="role === 'customer'">
-          <div v-if="loading" class="text-center py-4">
-            <div class="spinner-border text-primary" role="status"></div>
+          <div v-if="loading" class="text-center py-5">
+            <div class="spinner-grow text-primary" role="status"></div>
+            <p class="text-muted mt-2 small fw-bold text-uppercase">Fetching profile...</p>
           </div>
 
-          <Transition name="fade">
-            <div v-if="!loading && profile" class="profile-data mb-4">
-              <h4 class="text-secondary border-bottom pb-2 mb-3 fw-bold">Your Information</h4>
-              <div class="row mb-3 align-items-center">
-                <div class="col-4 fw-bold text-muted uppercase small">Username:</div>
-                <div class="col-8 fs-5">{{ profile.username }}</div>
+          <Transition name="slide-fade">
+            <div v-if="!loading && profile" class="profile-section">
+              <div class="d-flex align-items-center mb-4">
+                <h4 class="fw-bold mb-0 text-dark">Your Information</h4>
+                <div class="flex-grow-1 ms-3 border-bottom opacity-25"></div>
               </div>
-              <div class="row mb-3 align-items-center">
-                <div class="col-4 fw-bold text-muted uppercase small">Email:</div>
-                <div class="col-8 fs-5">{{ profile.email }}</div>
-              </div>
-              <div class="row mb-3 align-items-center">
-                <div class="col-4 fw-bold text-muted uppercase small">Phone:</div>
-                <div class="col-8 fs-5">{{ profile.phone || 'N/A' }}</div>
+
+              <div class="row g-4">
+                <div class="col-md-6">
+                  <div class="info-box p-3 rounded-4 bg-light border-0">
+                    <label class="text-muted fw-bold small text-uppercase mb-1 d-block">Username</label>
+                    <div class="fs-5 fw-medium text-dark">{{ profile.username }}</div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="info-box p-3 rounded-4 bg-light border-0">
+                    <label class="text-muted fw-bold small text-uppercase mb-1 d-block">Email Address</label>
+                    <div class="fs-5 fw-medium text-dark">{{ profile.email }}</div>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="info-box p-3 rounded-4 bg-light border-0">
+                    <label class="text-muted fw-bold small text-uppercase mb-1 d-block">Phone Number</label>
+                    <div class="fs-5 fw-medium text-dark">{{ profile.phone || 'Not provided' }}</div>
+                  </div>
+                </div>
               </div>
             </div>
           </Transition>
 
-          <div v-if="!loading && error" class="alert alert-warning small text-center">
-            {{ error }}
+          <div v-if="!loading && error" class="alert glass-alert alert-warning border-0 rounded-4 text-center">
+            <i class="bi bi-exclamation-triangle me-2"></i> {{ error }}
           </div>
         </div>
 
-        <div v-if="role === 'worker'" class="py-4 text-center">
-          <div class="mb-3">
-            <i class="bi bi-shield-check text-primary" style="font-size: 3rem;"></i>
+        <div v-if="role === 'worker'" class="worker-dashboard py-4 text-center">
+          <div class="status-badge d-inline-block px-4 py-2 rounded-pill bg-primary-subtle text-primary fw-bold mb-4">
+            <i class="bi bi-shield-lock-fill me-2"></i> Administrator Mode
           </div>
-          <p class="fs-5 fw-semibold">You are logged in with administrative privileges.</p>
-          <div class="alert alert-info border-0 shadow-sm">Use the dashboard to manage products and process customer orders.</div>
+          <div class="row justify-content-center">
+            <div class="col-md-10">
+              <div class="alert alert-info border-0 rounded-4 shadow-sm bg-light py-3 mt-3">
+                <i class="bi bi-info-circle-fill text-info me-2"></i>
+                Navigate using the controls below to begin management tasks.
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="d-grid gap-2 d-md-flex justify-content-center mt-4 pt-3 border-top">
-          <button class="btn btn-warning px-4 py-2 fw-bold shadow-sm" @click="viewProducts">
-            <i class="bi bi-box-seam me-2"></i> Browse Products
-          </button>
-
-          <button :class="role === 'worker' ? 'btn btn-info text-white' : 'btn btn-primary'" class="px-4 py-2 fw-bold shadow-sm" @click="viewOrders">
-            <i class="bi bi-receipt me-2"></i>
-            {{ role === 'worker' ? 'Manage Orders' : 'View My Orders' }}
-          </button>
-
-          <button v-if="role === 'customer'" class="btn btn-success px-4 py-2 fw-bold shadow-sm" @click="viewCart">
-            <i class="bi bi-cart me-2"></i> My Cart
-          </button>
-
-          <button class="btn btn-danger px-4 py-2 fw-bold shadow-sm" @click="handleLogout">
-            <i class="bi bi-box-arrow-right me-2"></i> Logout
-          </button>
+        <div class="navigation-grid mt-5 pt-4 border-top">
+          <div class="row g-3">
+            <div class="col-6 col-md-3">
+              <button class="btn btn-warning w-100 py-3 rounded-4 fw-bold shadow-sm nav-btn" @click="viewProducts">
+                <i class="bi bi-box-seam d-block fs-4 mb-1"></i> Shop
+              </button>
+            </div>
+            <div class="col-6 col-md-3">
+              <button :class="role === 'worker' ? 'btn-info text-white' : 'btn-primary'"
+                      class="btn w-100 py-3 rounded-4 fw-bold shadow-sm nav-btn" @click="viewOrders">
+                <i class="bi bi-receipt d-block fs-4 mb-1"></i> Orders
+              </button>
+            </div>
+            <div class="col-6 col-md-3">
+              <button v-if="role === 'customer'" class="btn btn-success w-100 py-3 rounded-4 fw-bold shadow-sm nav-btn" @click="viewCart">
+                <i class="bi bi-cart3 d-block fs-4 mb-1"></i> Cart
+              </button>
+            </div>
+            <div class="col-6 col-md-3">
+              <button class="btn btn-outline-danger w-100 py-3 rounded-4 fw-bold nav-btn" @click="handleLogout">
+                <i class="bi bi-power d-block fs-4 mb-1"></i> Logout
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -124,43 +152,47 @@ const viewOrders = () => router.push('/orders');
 
 <style scoped>
 .animate-in {
-  animation: slideUp 0.6s ease-out;
+  animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.header-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(135deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%);
+  pointer-events: none;
+}
+
+.info-box {
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.info-box:hover {
+  background-color: #f8f9fa !important;
+  transform: translateY(-2px);
+}
+
+.glass-alert {
+  background: rgba(255, 193, 7, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.nav-btn {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.nav-btn:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+.nav-btn:active {
+  transform: scale(0.95);
 }
 
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.4s ease;
-}
-
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
-}
-
-.btn {
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.btn:active {
-  transform: scale(0.98);
-}
-
-.uppercase {
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
+.z-index-10 { z-index: 10; }
 </style>

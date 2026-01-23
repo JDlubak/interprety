@@ -6,9 +6,6 @@ const PREFIX = '/products'
 export const getProducts = () =>
     callApi('get', PREFIX);
 
-export const getProductById = (id) =>
-    callApi('get', `${PREFIX}/${id}`);
-
 export const getProductSeoDescription = (id) =>
     callApi('get', `${PREFIX}/${id}/seo-description`);
 
